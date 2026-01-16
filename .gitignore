@@ -26,8 +26,8 @@ data/raw/
 data/downloads/
 data/uploads/
 data/runtime/
-artifacts/models/*.joblib
 artifacts/models/*.json.tmp
+!artifacts/models/.gitkeep
 *.sqlite3
 *.db
 
@@ -36,4 +36,3 @@ artifacts/review/
 video/.hyperframes/
 video/.media/
 video/output/*.tmp
-

@@ -100,3 +100,36 @@ This journal records the decisions that materially shape LogLens. Each entry sta
 - **Evidence:** The precedence is deterministic and directly testable across representative formats.
 - **Revisit when:** Format-specific adapters or streaming sessions provide stronger boundaries.
 - **Implementation:** Ingestion pipeline; `feat: validate and redact uploaded logs`.
+
+## 010 — Use XGBoost for anomaly detection and a calibrated linear RCA model
+
+- **Context:** The anomaly task has compact event-count features and severe imbalance; the RCA task must map evidence back to readable log lines.
+- **Options considered:** one opaque sequence model; two XGBoost models; XGBoost for anomaly plus calibrated linear text classification for RCA.
+- **Decision:** Use class-weighted XGBoost on HDFS event counts and calibrated logistic regression on synthetic incident TF-IDF features.
+- **Why:** The anomaly model captures nonlinear event interactions, while the RCA model keeps class evidence inspectable and confidence calibratable.
+- **Tradeoffs:** The models do not share a representation, and TF-IDF will miss unseen semantic paraphrases.
+- **Evidence:** On the full HDFS_v1 trace matrix, the anomaly model reached 0.9994 PR-AUC and 0.9956 F1; the held-out synthetic-family RCA test reached 1.0000 macro-F1.
+- **Revisit when:** A sequence or embedding model produces a meaningful held-out gain without breaking latency or evidence mapping.
+- **Implementation:** Offline ML pipeline; `feat: train reproducible anomaly and cause models`.
+
+## 012 — Evaluate on the complete HDFS_v1 trace matrix
+
+- **Context:** The 100,000-line convenience subset contains only 7,940 traces and the first baseline reached 0.5081 PR-AUC, far below the acceptance target.
+- **Options considered:** tune against the small subset; report the small-subset limitation; use the official complete HDFS_v1 preprocessed trace matrix.
+- **Decision:** Download the checksum-pinned LogHub HDFS_v1 archive and evaluate on its 575,061 block-level traces.
+- **Why:** It matches the dataset named in the project scope and supplies enough anomaly diversity for a credible held-out evaluation.
+- **Tradeoffs:** The download is 186 MB compressed, the extracted assets are excluded from Git, and initial setup takes longer.
+- **Evidence:** Without changing the test threshold after inspection, the complete trace matrix produced 0.9994 PR-AUC, 0.9956 F1, and a 0.0002 false-positive rate on 115,013 held-out traces.
+- **Revisit when:** LogHub publishes a corrected version, or a deployment-specific labeled corpus is available.
+- **Implementation:** Dataset acquisition and offline evaluation; `feat: train reproducible anomaly and cause models`.
+
+## 011 — Tune the anomaly threshold on validation data
+
+- **Context:** The default probability threshold does not encode the product's false-alarm budget, and selecting on test data would leak evaluation information.
+- **Options considered:** fixed 0.5 threshold; maximize test F1; scan validation thresholds under a 5% false-positive constraint.
+- **Decision:** Select the highest-validation-F1 threshold among candidates with false-positive rate at or below 5%, then evaluate it once on held-out test traces.
+- **Why:** It ties the classifier to an operational cost while preserving the test set for honest reporting.
+- **Tradeoffs:** The selected threshold depends on the demo subset's prevalence and must be recalibrated for a new environment.
+- **Evidence:** The evaluation report records threshold, FPR, PR-AUC, F1, and a 10:1 missed-anomaly cost score.
+- **Revisit when:** Pilot data supplies a different base rate or explicit incident costs.
+- **Implementation:** Offline ML pipeline; `feat: train reproducible anomaly and cause models`.

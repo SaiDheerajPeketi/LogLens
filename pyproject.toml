@@ -57,3 +57,6 @@ strict = true
 packages = ["loglens"]
 mypy_path = "backend"
 
+[[tool.mypy.overrides]]
+module = ["joblib", "pandas", "sklearn.*", "xgboost"]
+ignore_missing_imports = true
