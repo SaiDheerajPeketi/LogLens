@@ -29,9 +29,15 @@ Some Docker installations use the standalone `docker-compose` command. If `docke
 
 ## Walkthrough
 
-[![LogLens walkthrough](video/loglens-walkthrough-poster.png)](https://youtu.be/NRXxuTyRWns)
+<p align="center">
+  <a href="https://youtu.be/NRXxuTyRWns">
+    <img src="video/loglens-walkthrough-poster.png" alt="Play the 60-second LogLens walkthrough on YouTube" width="900">
+  </a>
+  <br>
+  <strong><a href="https://youtu.be/NRXxuTyRWns">Watch: LogLens — Evidence-First Log Analysis in 60 Seconds</a></strong>
+</p>
 
-[Watch the 60-second walkthrough on YouTube](https://youtu.be/NRXxuTyRWns), or [open the MP4 directly](video/loglens-walkthrough.mp4).
+The one-minute demo follows an investigation from a suspicious log window to a likely root cause and the exact redacted evidence behind it. You can also [open the MP4 directly](video/loglens-walkthrough.mp4).
 
 ## How it works
 
