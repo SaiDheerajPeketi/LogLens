@@ -103,6 +103,8 @@ def train_anomaly_model(
     threshold = _select_threshold(validation_y.to_numpy(), model.predict_proba(validation_x)[:, 1])
     scores = model.predict_proba(test_x)[:, 1]
     predicted = (scores >= threshold).astype(int)
+    matrix = confusion_matrix(test_y, predicted, labels=[0, 1])
+    true_negative, false_positive, false_negative, true_positive = matrix.ravel()
     metrics = {
         "pr_auc": float(average_precision_score(test_y, scores)),
         "precision": float(precision_score(test_y, predicted, zero_division=0)),
@@ -114,9 +116,13 @@ def train_anomaly_model(
         "train_traces": float(len(train_y)),
         "validation_traces": float(len(validation_y)),
         "test_traces": float(len(test_y)),
+        "true_negative": float(true_negative),
+        "false_positive": float(false_positive),
+        "false_negative": float(false_negative),
+        "true_positive": float(true_positive),
     }
     confusion = pd.DataFrame(
-        confusion_matrix(test_y, predicted, labels=[0, 1]),
+        matrix,
         index=["actual_normal", "actual_anomaly"],
         columns=["predicted_normal", "predicted_anomaly"],
     )
@@ -196,6 +202,12 @@ def train_root_cause_model() -> tuple[
         "macro_f1": float(f1_score(test_target, predicted, average="macro")),
         "weighted_f1": float(f1_score(test_target, predicted, average="weighted")),
         "test_incidents": float(len(test_target)),
+        "correct_incidents": float(
+            sum(
+                actual == guess
+                for actual, guess in zip(test_target, predicted, strict=True)
+            )
+        ),
         "held_out_families": float(
             len({incident.family for incident in incidents if incident.split == "test"})
         ),
@@ -251,6 +263,17 @@ def _write_evaluation_markdown(path: Path, metrics: dict[str, Any]) -> None:
                     "validation data and reported once on the held-out test traces."
                 ),
                 "",
+                "| Actual \\ Predicted | Normal | Anomaly |",
+                "| --- | ---: | ---: |",
+                (
+                    f"| Normal | {int(anomaly['true_negative']):,} | "
+                    f"{int(anomaly['false_positive']):,} |"
+                ),
+                (
+                    f"| Anomaly | {int(anomaly['false_negative']):,} | "
+                    f"{int(anomaly['true_positive']):,} |"
+                ),
+                "",
                 "## Root-cause classification — disclosed synthetic incidents",
                 "",
                 f"- Macro F1: **{root_cause['macro_f1']:.4f}**",
@@ -262,6 +285,12 @@ def _write_evaluation_markdown(path: Path, metrics: dict[str, Any]) -> None:
                     "Each cause keeps one wording family completely outside training. "
                     "These numbers measure generalization across authored templates, "
                     "not real-world RCA accuracy."
+                ),
+                "",
+                (
+                    f"The held-out confusion matrix contains "
+                    f"{int(root_cause['correct_incidents'])} correct predictions out of "
+                    f"{int(root_cause['test_incidents'])} incidents."
                 ),
                 "",
                 "## Explanation integrity",
@@ -281,9 +310,17 @@ def _write_evaluation_markdown(path: Path, metrics: dict[str, Any]) -> None:
                 ),
                 "- Synthetic RCA metrics cannot be interpreted as production incident accuracy.",
                 (
-                    "- Uploaded formats outside the known patterns may fall back to "
+                "- Uploaded formats outside the known patterns may fall back to "
                     "coarse line windows."
                 ),
+                "",
+                "## Machine-readable artifacts",
+                "",
+                "- `artifacts/evaluation/metrics.json`",
+                "- `artifacts/evaluation/anomaly_confusion.csv`",
+                "- `artifacts/evaluation/anomaly_precision_recall.csv`",
+                "- `artifacts/evaluation/root_cause_confusion.csv`",
+                "- `artifacts/evaluation/synthetic_manifest.json`",
                 "",
                 "## Reproduce",
                 "",
@@ -335,12 +372,15 @@ def train_all(
         json.dumps(disclosure, indent=2, sort_keys=True) + "\n", encoding="utf-8"
     )
     manifest = {
-        "version": "hdfs100k-synthetic-rca-v1",
+        "version": "hdfsv1-synthetic-rca-v1",
         "generated_at": metrics["generated_at"],
         "anomaly_model": "anomaly_bundle.joblib",
         "root_cause_model": "rca_bundle.joblib",
         "metrics": metrics,
-        "feature_schema": "HDFS event-count vectors; synthetic incident word/bigram TF-IDF",
+        "feature_schema": (
+            "HDFS event-count vectors plus trace length and unique-event count; "
+            "synthetic incident word/bigram TF-IDF"
+        ),
         "dataset": {
             "name": "LogHub HDFS_v1",
             "version": "Zenodo record 8196385",
