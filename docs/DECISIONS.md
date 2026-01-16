@@ -189,3 +189,15 @@ This journal records the decisions that materially shape LogLens. Each entry sta
 - **Evidence:** A clean Compose build served the production interface and completed a database-timeout analysis at port 8080; the healthy CPU-only image measured 178,490,743 bytes.
 - **Reconsideration trigger:** Split the services and replace SQLite when independent scaling, a CDN, or multiple application replicas become necessary.
 - **Related implementation:** Dockerfile, Compose service, static asset routing, and CI; `chore: package the local demo with Docker`.
+
+## 018 — Exercise the product contract in a real browser
+
+- **Context:** Component and API tests can pass while focus transfer, uploads, polling, responsive layout, or the production asset bundle fails at the browser boundary.
+- **Options considered:** rely on unit tests; keep a manual QA checklist; run Playwright against the composed production service.
+- **Decision:** Cover the built-in incident, uploaded log, no-anomaly result, low-confidence human-review result, and forced deterministic fallback in Chromium against the Docker URL.
+- **Why:** These are the five user-visible paths where the API, queue, models, evidence navigation, and interface must work together.
+- **Benefits:** The same harness produces reproducible desktop and mobile screenshots from measured product states and verifies keyboard focus reaches a cited transcript row.
+- **Tradeoffs:** CI downloads a browser and the suite depends on the container reaching health first.
+- **Evidence:** All five workflows passed against the production image; captured views cover 1440-pixel desktop and 390-pixel mobile layouts.
+- **Reconsideration trigger:** Add browsers or visual-regression baselines when cross-browser support becomes a stated product requirement.
+- **Related implementation:** Playwright configuration, end-to-end suite, CI Docker job, and product screenshots; `test: verify complete analysis workflows`.
