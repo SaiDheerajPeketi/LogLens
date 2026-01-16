@@ -42,6 +42,4 @@ videos/**/.thumbnails/
 videos/**/capture/
 videos/**/renders/
 videos/**/snapshots/
-videos/**/AGENTS.md
-videos/**/CLAUDE.md
 videos/**/meta.json
