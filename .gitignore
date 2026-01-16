@@ -1,0 +1,39 @@
+.DS_Store
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+dist/
+build/
+*.egg-info/
+
+# JavaScript
+node_modules/
+frontend/dist/
+coverage/
+playwright-report/
+test-results/
+
+# Runtime data
+data/raw/
+data/downloads/
+data/uploads/
+data/runtime/
+artifacts/models/*.joblib
+artifacts/models/*.json.tmp
+*.sqlite3
+*.db
+
+# Generated review and video intermediates
+artifacts/review/
+video/.hyperframes/
+video/.media/
+video/output/*.tmp
+
