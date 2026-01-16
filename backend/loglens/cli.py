@@ -16,6 +16,7 @@ from .ml.datasets import (
     verify_sha256,
 )
 from .ml.training import train_all
+from .runtime_evaluation import evaluate_runtime
 
 
 def _download(url: str, destination: Path, expected_sha256: str) -> None:
@@ -62,6 +63,16 @@ def build_parser() -> argparse.ArgumentParser:
     )
     train.add_argument("--model-dir", type=Path, default=Path("artifacts/models"))
     train.add_argument("--evaluation-dir", type=Path, default=Path("artifacts/evaluation"))
+    runtime = subparsers.add_parser(
+        "evaluate-runtime",
+        help="Measure citation integrity and raw-upload retention",
+    )
+    runtime.add_argument("--model-dir", type=Path, default=Path("artifacts/models"))
+    runtime.add_argument(
+        "--output",
+        type=Path,
+        default=Path("artifacts/evaluation/runtime_integrity.json"),
+    )
     return parser
 
 
@@ -72,6 +83,12 @@ def main() -> None:
         _download(HDFS_ARCHIVE_URL, archive_path, HDFS_ARCHIVE_SHA256)
         _extract_hdfs_assets(archive_path, Path("data/downloads/hdfs_v1"))
         print("Downloaded, extracted, and verified the HDFS_v1 evaluation assets.")
+        return
+    if args.command == "evaluate-runtime":
+        metrics = evaluate_runtime(args.model_dir)
+        args.output.parent.mkdir(parents=True, exist_ok=True)
+        args.output.write_text(json.dumps(metrics, indent=2, sort_keys=True) + "\n")
+        print(json.dumps(metrics["summary"], indent=2, sort_keys=True))
         return
     metrics = train_all(
         args.structured,

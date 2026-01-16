@@ -15,6 +15,8 @@ These are measured results from the committed training pipeline, not projected t
 
 The dataset is split by block trace. The threshold is selected on validation data and reported once on the held-out test traces.
 
+The committed precision-recall artifact contains 132 measured operating points. The cost-weighted score assigns a missed anomaly 10 times the cost of a false alarm, then normalizes against the worst possible cost for the held-out set.
+
 | Actual \ Predicted | Normal | Anomaly |
 | --- | ---: | ---: |
 | Normal | 111,620 | 25 |
@@ -33,7 +35,13 @@ The held-out confusion matrix contains 150 correct predictions out of 150 incide
 
 ## Explanation integrity
 
-Citation validation is structural: the service rejects any explanation whose line IDs are not present in the evidence supplied to the explainer. Deterministic fallback covers every invalid or unavailable API response.
+- Citation validity: **100%** (15 of 15 returned citations)
+- Completed runtime cases: **6 of 6**
+- Invalid citation trials rejected: **1 of 1**
+- Raw upload files retained: **0**
+- Raw sensitive markers found in SQLite: **0**
+
+The runtime evaluator exercises all five built-in scenarios plus a redaction-sensitive upload through the queue, models, evidence selection, explanation, and temporary SQLite store. A citation passes only when its line ID belongs to the primary window's supplied evidence. The evaluator also injects an out-of-set citation and confirms it is rejected.
 
 ## Limitations
 
@@ -48,6 +56,7 @@ Citation validation is structural: the service rejects any explanation whose lin
 - `artifacts/evaluation/anomaly_precision_recall.csv`
 - `artifacts/evaluation/root_cause_confusion.csv`
 - `artifacts/evaluation/synthetic_manifest.json`
+- `artifacts/evaluation/runtime_integrity.json`
 
 ## Reproduce
 
@@ -56,4 +65,5 @@ python -m loglens.cli download-data
 python -m loglens.cli train \
   --structured data/downloads/hdfs_v1/Event_occurrence_matrix.csv \
   --labels data/downloads/hdfs_v1/anomaly_label.csv
+python -m loglens.cli evaluate-runtime
 ```

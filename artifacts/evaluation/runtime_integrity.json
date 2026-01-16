@@ -1,0 +1,65 @@
+{
+  "cases": [
+    {
+      "anomalous_windows": 1,
+      "citations_checked": 3,
+      "passed": true,
+      "source": "Checkout database timeout",
+      "source_kind": "scenario",
+      "valid_citations": 3
+    },
+    {
+      "anomalous_windows": 1,
+      "citations_checked": 3,
+      "passed": true,
+      "source": "Authentication token failure",
+      "source_kind": "scenario",
+      "valid_citations": 3
+    },
+    {
+      "anomalous_windows": 1,
+      "citations_checked": 3,
+      "passed": true,
+      "source": "Connection pool exhaustion",
+      "source_kind": "scenario",
+      "valid_citations": 3
+    },
+    {
+      "anomalous_windows": 0,
+      "citations_checked": 0,
+      "passed": true,
+      "source": "Healthy checkout traffic",
+      "source_kind": "scenario",
+      "valid_citations": 0
+    },
+    {
+      "anomalous_windows": 1,
+      "citations_checked": 3,
+      "passed": true,
+      "source": "Ambiguous service degradation",
+      "source_kind": "scenario",
+      "valid_citations": 3
+    },
+    {
+      "anomalous_windows": 1,
+      "citations_checked": 3,
+      "passed": true,
+      "source": "runtime-evaluation.log",
+      "source_kind": "upload",
+      "valid_citations": 3
+    }
+  ],
+  "evaluation": "runtime_integrity",
+  "model_version": "hdfsv1-synthetic-rca-v1",
+  "summary": {
+    "analyses": 6,
+    "cases_passed": 6,
+    "citation_validity_rate": 1.0,
+    "citations_checked": 15,
+    "invalid_citation_trials": 1,
+    "invalid_citations_rejected": 1,
+    "raw_markers_found_in_persistence": 0,
+    "raw_upload_files_retained": 0,
+    "valid_citations": 15
+  }
+}

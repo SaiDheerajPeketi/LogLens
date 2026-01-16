@@ -201,3 +201,15 @@ This journal records the decisions that materially shape LogLens. Each entry sta
 - **Evidence:** All five workflows passed against the production image; captured views cover 1440-pixel desktop and 390-pixel mobile layouts.
 - **Reconsideration trigger:** Add browsers or visual-regression baselines when cross-browser support becomes a stated product requirement.
 - **Related implementation:** Playwright configuration, end-to-end suite, CI Docker job, and product screenshots; `test: verify complete analysis workflows`.
+
+## 019 — Measure integrity through the persisted runtime path
+
+- **Context:** Unit tests prove individual guards, but the acceptance claims require a concrete denominator for citation validity and proof that an upload is not written raw during normal processing.
+- **Options considered:** report test coverage qualitatively; count only deterministic explainer output; run all scenarios and a sensitive upload through the queue, models, and temporary database.
+- **Decision:** Provide an offline runtime evaluator that checks every returned citation against the selected evidence, injects one invalid citation, scans persistence for raw markers, and counts raw log files.
+- **Why:** It turns privacy and citation claims into repeatable measurements without sending data externally or retaining evaluation input.
+- **Benefits:** The result is machine-readable, fast enough for CI, and exercises the same service and SQLite path as the application.
+- **Tradeoffs:** Six authored cases do not estimate real-world explanation usefulness, and marker scanning cannot prove redaction catches every possible sensitive format.
+- **Evidence:** Six of six analyses passed, all 15 returned citations were valid, the invalid citation was rejected, and zero raw files or raw markers remained.
+- **Reconsideration trigger:** Expand the corpus and privacy probes when representative customer formats or a formal data-classification standard become available.
+- **Related implementation:** Runtime evaluation command, CI integrity step, and evaluation artifact; `test: measure runtime citation integrity`.

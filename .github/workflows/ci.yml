@@ -21,6 +21,8 @@ jobs:
       - run: uv run mypy backend/loglens
       - name: Verify ML splits and packaged models
         run: uv run pytest backend/tests/test_ml_datasets.py backend/tests/test_model_artifacts.py
+      - name: Measure runtime integrity
+        run: uv run loglens evaluate-runtime --output /tmp/loglens-runtime-integrity.json
       - run: uv run pytest
 
   frontend:
