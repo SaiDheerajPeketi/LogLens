@@ -156,6 +156,17 @@ This journal records the decisions that materially shape LogLens. Each entry sta
 - **Revisit when:** A local explanation model can meet the same faithfulness and latency requirements.
 - **Implementation:** Explanation adapter and citation guard; `feat: process analyses through the cited evidence API`.
 
+## 016 — Make evidence navigation the primary interface action
+
+- **Context:** A conventional dashboard can show scores but leaves the operator to reconnect a prediction with the source lines manually.
+- **Options considered:** card-based analytics dashboard; separate result and raw-log pages; flight-recorder workspace with synchronized timeline, diagnosis, and transcript.
+- **Decision:** Use a compact left source rail, central replay timeline, right diagnosis rail, and lower transcript, with every evidence item acting as a direct focus link to its cited line.
+- **Why:** The layout exposes the product's differentiator—the relationship between anomaly, cause, and exact evidence—without requiring page changes.
+- **Tradeoffs:** Dense desktop information architecture needs a separate stacked mobile order and horizontal window replay.
+- **Evidence:** Desktop and 390-pixel visual checks preserve source selection, anomaly replay, diagnosis, and cited transcript reading; interaction tests cover arrow-key windows and focus transfer to evidence.
+- **Revisit when:** Operator testing shows a different first action or the diagnosis rail obscures rather than accelerates triage.
+- **Implementation:** Flight-recorder React interface; `feat: build the flight recorder analysis console`.
+
 ## 011 — Tune the anomaly threshold on validation data
 
 - **Context:** The default probability threshold does not encode the product's false-alarm budget, and selecting on test data would leak evaluation information.
