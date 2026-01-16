@@ -3,8 +3,10 @@ from __future__ import annotations
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 
 from .api import router
 from .config import Settings, get_settings
@@ -44,6 +46,17 @@ def create_app(
         allow_headers=["Content-Type"],
     )
     app.include_router(router)
+    if active_settings.static_dir.exists():
+        assets_dir = active_settings.static_dir / "assets"
+        if assets_dir.exists():
+            app.mount("/assets", StaticFiles(directory=assets_dir), name="frontend-assets")
+
+        @app.get("/{path:path}", include_in_schema=False)
+        def frontend(path: str) -> FileResponse:
+            if path.startswith("api/"):
+                raise HTTPException(status_code=404, detail="API route not found.")
+            return FileResponse(active_settings.static_dir / "index.html")
+
     return app
 
 

@@ -1,4 +1,7 @@
+from pathlib import Path
+
 from fastapi.testclient import TestClient
+from loglens.config import Settings
 from loglens.main import create_app
 
 client = TestClient(create_app())
@@ -31,3 +34,15 @@ def test_model_card_separates_datasets() -> None:
     assert "HDFS" in payload["anomaly_dataset"]
     assert "synthetic" in payload["root_cause_dataset"].lower()
 
+
+def test_built_frontend_is_served_without_shadowing_unknown_api_routes(
+    tmp_path: Path,
+) -> None:
+    static_dir = tmp_path / "dist"
+    (static_dir / "assets").mkdir(parents=True)
+    (static_dir / "index.html").write_text("<html><title>LogLens</title></html>")
+    static_client = TestClient(create_app(Settings(static_dir=static_dir)))
+
+    assert static_client.get("/").status_code == 200
+    assert "LogLens" in static_client.get("/evaluation").text
+    assert static_client.get("/api/v1/unknown").status_code == 404

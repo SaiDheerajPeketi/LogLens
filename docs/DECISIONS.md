@@ -177,3 +177,15 @@ This journal records the decisions that materially shape LogLens. Each entry sta
 - **Evidence:** The evaluation report records threshold, FPR, PR-AUC, F1, and a 10:1 missed-anomaly cost score.
 - **Revisit when:** Pilot data supplies a different base rate or explicit incident costs.
 - **Implementation:** Offline ML pipeline; `feat: train reproducible anomaly and cause models`.
+
+## 017 — Ship one CPU-only production container
+
+- **Context:** The local demo needs one reproducible command, durable SQLite state, production frontend assets, and the trained models without requiring GPU support.
+- **Options considered:** separate frontend and API containers; a development-server composition; one multi-stage image that serves the compiled interface from FastAPI.
+- **Decision:** Build the React interface in a Node stage, install the Python service with the official CPU-only XGBoost distribution on Linux, and run one non-root FastAPI container with a named SQLite volume.
+- **Why:** One service keeps the portfolio demo and later single-service cloud deployment understandable while preserving the same API boundary used in development.
+- **Benefits:** The container has an explicit health check, persists only redacted derived state, and avoids shipping unused GPU libraries.
+- **Tradeoffs:** Frontend and backend releases are coupled, the SQLite volume constrains horizontal scaling, and local hot reload still uses the native development commands.
+- **Evidence:** A clean Compose build served the production interface and completed a database-timeout analysis at port 8080; the healthy CPU-only image measured 178,490,743 bytes.
+- **Reconsideration trigger:** Split the services and replace SQLite when independent scaling, a CDN, or multiple application replicas become necessary.
+- **Related implementation:** Dockerfile, Compose service, static asset routing, and CI; `chore: package the local demo with Docker`.

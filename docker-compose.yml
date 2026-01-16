@@ -1,0 +1,19 @@
+services:
+  loglens:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    init: true
+    ports:
+      - "8080:8080"
+    environment:
+      LOGLENS_RESULT_TTL_HOURS: "24"
+      LOGLENS_QUEUE_CAPACITY: "8"
+      LOGLENS_OPENAI_MODEL: "${LOGLENS_OPENAI_MODEL:-gpt-5-mini}"
+      OPENAI_API_KEY: "${OPENAI_API_KEY:-}"
+    volumes:
+      - loglens-runtime:/app/data/runtime
+    restart: unless-stopped
+
+volumes:
+  loglens-runtime:
