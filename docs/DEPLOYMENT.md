@@ -1,12 +1,8 @@
-# Cloud Deployment Runbook
+# Deployment notes
 
-## Current status
+The repository includes a Render Blueprint for a single-instance deployment. The same Docker image also runs locally with Compose.
 
-Public hosting is deferred. No live URL is claimed for this release.
-
-This runbook defines a concrete later path on Render because the repository already produces one health-checked Docker web service. It is a readiness document, not evidence that the service has been deployed.
-
-## Proposed Render topology
+## Render topology
 
 - One Docker web service built from the repository root
 - One 1 GB persistent disk mounted at `/app/data/runtime`
@@ -78,7 +74,7 @@ Do not publish a live-demo link until the health check, all five browser workflo
 
 The SQLite schema is intentionally small and currently has no forward-only migrations. If that changes, add a tested backup and migration rollback procedure before public deployment.
 
-## Path beyond a single demo instance
+## Moving beyond one instance
 
 Move from the proposed topology when availability, concurrency, or durable work matters:
 

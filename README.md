@@ -1,41 +1,21 @@
 # LogLens
 
-Evidence-first log anomaly detection and root-cause analysis.
-
-LogLens turns a small plain-text log into a replayable incident timeline, a probable cause, and an explanation tied to exact redacted lines. It deliberately separates what was measured on real data from what was learned from synthetic incidents.
-
-> **Delivery status:** the production Docker demo is verified locally at `http://localhost:8080`. Public cloud hosting and public repository visibility are deferred; this project does not claim a public live URL or public source access.
+LogLens is a small incident-analysis app for plain-text logs. It finds suspicious windows, suggests a likely cause, and links every explanation back to the exact redacted lines that support it.
 
 ![LogLens incident console](docs/screenshots/console-desktop.png)
 
-## Why this project exists
+## What it does
 
-An anomaly score alone does not help an engineer decide what to inspect next. LogLens connects three questions in one interface:
+- Replays a log as a timeline of scored windows.
+- Classifies six supported outcomes, including `unknown` when confidence is low.
+- Redacts common secrets and identifiers before analysis or storage.
+- Keeps explanations grounded with line-level citations.
+- Runs without an API key using a deterministic local explainer.
+- Exposes the same workflow through a React interface and a FastAPI API.
 
-1. **When did behavior become suspicious?** A replayable timeline ranks log windows.
-2. **What supported cause best fits the window?** A calibrated classifier can also resolve to “unknown—needs human review.”
-3. **What evidence supports that answer?** Every explanation citation links to an exact redacted transcript line.
+## Try it locally
 
-## Measured results
-
-| Evaluation | Held-out result | Scope |
-| --- | ---: | --- |
-| HDFS anomaly PR-AUC | **0.9994** | 115,013 block traces |
-| HDFS anomaly F1 | **0.9956** | Validation-selected threshold 0.65 |
-| HDFS false-positive rate | **0.0002** | 25 false positives / 111,645 normal traces |
-| Synthetic RCA macro-F1 | **1.0000** | 150 incidents from held-out template families |
-| Explanation citation validity | **100%** | 15 / 15 citations across six runtime cases |
-| Raw upload retention | **0 files** | Sensitive upload probe and temporary SQLite scan |
-
-These results are not interchangeable. HDFS validates binary anomaly detection; it has no root-cause labels. The RCA score measures family-disjoint synthetic incidents and is not a production-accuracy claim. Arbitrary uploads use a disclosed severity-and-template-rarity anomaly score because their event vocabulary does not match HDFS.
-
-See [the complete evaluation report](docs/EVALUATION.md) and [machine-readable artifacts](artifacts/evaluation/metrics.json).
-
-## Quick start
-
-Requirements: Docker Engine and Docker Compose.
-
-The repository is currently private. The clone command below requires GitHub access granted by the owner; otherwise, run the same commands from an authorized local checkout.
+You need Docker and Docker Compose.
 
 ```bash
 git clone https://github.com/SaiDheerajPeketi/LogLens.git
@@ -43,137 +23,147 @@ cd LogLens
 docker compose up --build
 ```
 
-Open [http://localhost:8080](http://localhost:8080). If your installation provides the standalone command, use `docker-compose up --build` instead; that is the command used for the verified local run.
+Open [http://localhost:8080](http://localhost:8080). The app includes several synthetic incidents, so you can explore the full workflow without uploading a file.
 
-The first page includes safe synthetic incidents. An OpenAI key is not required—the cited deterministic explanation is the default fallback.
+Some Docker installations use the standalone `docker-compose` command. If `docker compose` is unavailable, run `docker-compose up --build` instead.
+
+## Walkthrough
+
+[![LogLens walkthrough](video/loglens-walkthrough-poster.png)](https://youtu.be/NRXxuTyRWns)
+
+[Watch the 60-second walkthrough on YouTube](https://youtu.be/NRXxuTyRWns), or [open the MP4 directly](video/loglens-walkthrough.mp4).
+
+## How it works
+
+```text
+validate -> redact -> parse -> group -> score -> classify -> cite -> explain
+```
+
+1. The upload is checked for file type, size, encoding, and line count.
+2. Credentials, email addresses, IP addresses, and user identifiers are redacted.
+3. Log lines are parsed into timestamps, severity levels, identifiers, and normalized templates.
+4. Lines are grouped by correlation ID, five-minute time window, or overlapping line window.
+5. Each window receives an anomaly score and a probable cause.
+6. The strongest supporting lines are selected as evidence.
+7. An explanation is generated and every citation is checked against that evidence.
+
+Raw uploads stay in memory and are discarded after processing. Redacted results are stored in SQLite for 24 hours.
+
+## Models and evaluation
+
+LogLens uses two separate evaluation tracks because the public HDFS dataset has anomaly labels but no root-cause labels.
+
+| Task | Dataset | Result |
+| --- | --- | ---: |
+| Anomaly detection | LogHub HDFS_v1, 115,013 held-out traces | 0.9994 PR-AUC |
+| Anomaly detection | LogHub HDFS_v1, validation-selected threshold | 0.9956 F1 |
+| Anomaly detection | LogHub HDFS_v1 | 0.0002 false-positive rate |
+| Root-cause classification | 150 synthetic incidents from held-out template families | 1.0000 macro-F1 |
+| Explanation integrity | Six end-to-end runtime cases | 15/15 valid citations |
+
+The HDFS metrics apply only to the packaged HDFS anomaly model. Generic uploads use a severity-and-template-rarity score because their event vocabulary does not match HDFS. The root-cause result measures separation between synthetic template families; it is not a claim about production incident accuracy.
+
+See [the evaluation report](docs/EVALUATION.md) for the split strategy, confusion matrices, and limitations.
 
 ## Architecture
 
 ```mermaid
 flowchart LR
-    subgraph Offline[Offline training and evaluation]
-        HDFS[LogHub HDFS_v1<br/>block traces] --> HS[Block-ID split]
-        HS --> XGB[XGBoost<br/>anomaly classifier]
-        SYN[Disclosed synthetic<br/>incident corpus] --> SS[Template-family split]
-        SS --> RCA[Calibrated linear<br/>cause classifier]
-        XGB --> PKG[Versioned model package<br/>schema · metrics · checksums]
-        RCA --> PKG
-    end
+    A[Log file or scenario] --> B[Validation and redaction]
+    B --> C[Parsing and windowing]
+    C --> D[Anomaly scoring]
+    D --> E[Cause classification]
+    E --> F[Evidence selection]
+    F --> G[Validated explanation]
+    G --> H[(24-hour SQLite result)]
+    H --> I[FastAPI]
+    I --> J[React UI]
 
-    subgraph Runtime[Privacy-first runtime]
-        INPUT[Scenario or text upload] --> VALIDATE[Validate type, size,<br/>encoding, and lines]
-        VALIDATE --> REDACT[Redact secrets, users,<br/>emails, and IPs]
-        REDACT --> PARSE[Parse severity, time,<br/>IDs, and event templates]
-        PARSE --> WINDOW[Correlation, time, or<br/>overlapping line windows]
-        WINDOW --> FEATURES[Severity density and<br/>template-rarity features]
-        FEATURES --> SCORE[Generic anomaly scorer]
-        PKG --> CAUSE[Calibrated cause classifier]
-        SCORE --> CAUSE
-        CAUSE --> EVIDENCE[Rank exact redacted<br/>evidence lines]
-        EVIDENCE --> EXPLAIN{Explanation adapter}
-        EXPLAIN --> LOCAL[Deterministic cited prose]
-        EXPLAIN -. selected redacted evidence only .-> OAI[Optional OpenAI<br/>Responses API]
-        OAI --> GUARD[Citation allow-list guard]
-        LOCAL --> GUARD
-        GUARD --> SQLITE[(SQLite<br/>24-hour results)]
-        SQLITE --> API[FastAPI<br/>public API]
-        API --> UI[React flight-recorder<br/>interface]
-    end
-
-    XGB -. benchmark metrics .-> API
+    K[HDFS training pipeline] --> L[Versioned model bundle]
+    M[Synthetic RCA training] --> L
+    L --> D
+    L --> E
 ```
 
-The XGBoost model measures HDFS anomaly performance. It is not silently applied to unrelated event vocabularies. Generic uploads use the runtime scorer shown above, while the packaged calibrated RCA model supplies supported cause probabilities and line-level contributions.
-
-## Product surfaces
-
-- **Analysis console:** source controls, synchronized timeline, diagnosis rail, and redacted transcript.
-- **Incident detail:** probability, caveats, explanation mode, and focus links to cited evidence.
-- **Evaluation page:** held-out metrics, split boundaries, confusion counts, and honest limitations.
-- **Methodology and privacy:** the full trust boundary from validation through expiry.
-- **Mobile reading flow:** source → timeline → diagnosis → transcript at 390 pixels.
-
-<details>
-<summary>More screenshots</summary>
-
-![Held-out evaluation page](docs/screenshots/evaluation.png)
-
-![Complete mobile incident flow](docs/screenshots/console-mobile.png)
-
-</details>
-
-## Data and models
-
-- **Binary anomaly evaluation:** [LogHub HDFS_v1](https://github.com/logpai/loghub/blob/master/HDFS/README.md), split 60/20/20 by block ID to prevent trace leakage.
-- **Root-cause evaluation:** a disclosed generated corpus covering database timeout, authentication failure, connection-pool exhaustion, disk pressure, network/DNS failure, and unknown. One wording family per cause is held out.
-- **Generic parsing:** [Drain-style](https://github.com/logpai/logparser/blob/main/docs/tools/Drain.md) normalized event templates, with correlation IDs preferred over five-minute time windows and overlapping 200-line windows.
-- **Packaging:** every model bundle includes its dataset version, feature schema, threshold, metrics, build commit, and SHA-256 checksums.
-
-The official HDFS archive and raw derived datasets are intentionally excluded from Git. The download command pins and verifies their published checksums.
-
-## Privacy and explanation contract
-
-The runtime order is fixed:
-
-`validate → redact → parse → window → score → classify → select evidence → explain`
-
-- Uploads accept UTF-8 `.log` and `.txt` files up to 5 MB or 50,000 lines.
-- Credentials, tokens, emails, IP addresses, and user identifiers are redacted before persistence or external transmission.
-- Raw upload bytes are never written to disk; redacted derived results expire after 24 hours.
-- The optional external adapter receives only the selected redacted evidence and derived prediction metadata, uses strict structured output, and disables response storage.
-- Every returned citation must belong to the supplied evidence. A timeout, refusal, malformed result, or invalid citation resolves to deterministic cited prose.
-- The public demo is for synthetic or non-confidential logs. Automated redaction is defense in depth, not a guarantee.
+The packaged XGBoost model is used for the HDFS benchmark. The runtime scorer handles arbitrary uploads, while a calibrated linear classifier estimates supported cause probabilities.
 
 ## API
 
-| Method | Endpoint | Purpose |
+| Method | Endpoint | Description |
 | --- | --- | --- |
-| `POST` | `/api/v1/analyses` | Submit multipart upload or `{ "scenario_id": "…" }` |
-| `GET` | `/api/v1/analyses/{id}` | Read lifecycle, scores, causes, evidence, and explanation |
-| `GET` | `/api/v1/analyses/{id}/events?cursor=…` | Page through redacted events |
-| `POST` | `/api/v1/analyses/{id}/retry` | Retry reproducible scenario work |
+| `POST` | `/api/v1/analyses` | Submit a scenario or multipart log upload |
+| `GET` | `/api/v1/analyses/{id}` | Read status and results |
+| `GET` | `/api/v1/analyses/{id}/events` | Page through redacted events |
+| `POST` | `/api/v1/analyses/{id}/retry` | Retry a built-in scenario |
 | `GET` | `/api/v1/scenarios` | List built-in incidents |
-| `GET` | `/api/v1/model-card` | Read model scope and measured metrics |
-| `GET` | `/api/v1/health` | Read application and model readiness |
+| `GET` | `/api/v1/model-card` | Read model scope and metrics |
+| `GET` | `/api/v1/health` | Check application and model readiness |
 
-Interactive OpenAPI documentation is available at `http://localhost:8080/docs`.
+Interactive API documentation is available at [http://localhost:8080/docs](http://localhost:8080/docs) while the service is running.
 
-## Development and verification
+## Development
 
-The detailed [setup guide](docs/SETUP.md) covers native development, dataset acquisition, training, tests, environment variables, Docker, and troubleshooting.
+The short version:
 
-The repository verifies:
+```bash
+uv sync --extra dev --frozen
+npm ci --prefix frontend
+cp .env.example .env
 
-- 28 backend tests for ingestion, parsing, model manifests, persistence, API states, citations, fallbacks, expiry, and runtime integrity;
-- 5 React interaction and accessibility tests;
-- 5 production-browser workflows for built-in analysis, upload, no anomaly, low confidence, and deterministic fallback;
-- lint, strict type checking, production builds, dependency audit, and container health in CI.
+uv run uvicorn loglens.main:app --reload --host 127.0.0.1 --port 8000
+npm run dev --prefix frontend
+```
 
-## Walkthrough
+Run the backend checks:
 
-[![LogLens walkthrough poster](video/loglens-walkthrough-poster.png)](video/loglens-walkthrough.mp4)
+```bash
+uv run ruff check backend
+uv run mypy backend/loglens
+uv run pytest
+```
 
-[Watch the 60-second walkthrough](video/loglens-walkthrough.mp4). The committed deliverable is a silent 1920×1080 H.264 MP4 at 30 fps. It uses real product captures and measured results, and it ends by stating that public hosting is deferred.
+Run the frontend checks:
 
-## Cloud readiness
+```bash
+npm test --prefix frontend
+npm run build --prefix frontend
+```
 
-Public deployment is intentionally deferred. [The cloud runbook](docs/DEPLOYMENT.md) provides a concrete Render path using the committed Dockerfile, `/api/v1/health`, and a single attached disk for SQLite. It also explains why that configuration cannot scale horizontally and when to move to Postgres and a durable queue.
+For dataset download, model training, browser tests, environment variables, and troubleshooting, see [docs/SETUP.md](docs/SETUP.md).
 
-## Limitations and roadmap
+## Repository layout
 
-- Generic anomaly scoring is deterministic and does not inherit the HDFS model's metrics.
-- Synthetic RCA scores do not establish production incident accuracy.
-- Drain-style templates are intentionally lightweight and may group unfamiliar formats poorly.
-- SQLite and the in-process worker require one application instance.
-- There is no authentication, saved workspace, streaming ingestion, or public hosted instance in this release.
+```text
+backend/loglens/       FastAPI service, analysis pipeline, and training code
+backend/tests/         Backend and model tests
+frontend/src/          React application
+frontend/e2e/          Playwright workflows
+artifacts/models/      Versioned model bundles and manifest
+artifacts/evaluation/  Machine-readable evaluation results
+docs/                  Setup, evaluation, deployment, and design notes
+video/                 Rendered walkthrough and poster
+videos/                Walkthrough source files
+```
 
-Next steps are a representative cause-labeled operational dataset, format-specific parsers, Postgres plus a durable worker, authenticated workspaces, and a public deployment after an explicit privacy review.
+## Privacy and limitations
 
-## Project record
+- Uploads are limited to UTF-8 `.log` and `.txt` files up to 5 MB or 50,000 lines.
+- Raw upload bytes are not written to disk.
+- Redacted derived results expire after 24 hours.
+- The optional OpenAI explainer receives only selected redacted evidence and uses response storage disabled.
+- Automated redaction is defense in depth, not a guarantee. Use synthetic or non-confidential logs.
+- SQLite and the in-process worker are designed for a single application instance.
+- There is no authentication, saved workspace, or streaming ingestion.
 
-- [Product brief](PRODUCT.md)
-- [Decision journal](docs/DECISIONS.md)
-- [Evaluation report](docs/EVALUATION.md)
-- [Design system](DESIGN.md)
-- [Resume description](docs/RESUME.md)
-- [MIT license](LICENSE)
+## More documentation
+
+- [Setup and development](docs/SETUP.md)
+- [Evaluation details](docs/EVALUATION.md)
+- [Deployment notes](docs/DEPLOYMENT.md)
+- [Engineering decisions](docs/DECISIONS.md)
+- [Product notes](PRODUCT.md)
+- [Interface design](DESIGN.md)
+
+## License
+
+[MIT](LICENSE)

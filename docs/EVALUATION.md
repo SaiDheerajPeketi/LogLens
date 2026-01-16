@@ -1,6 +1,6 @@
 # LogLens Evaluation
 
-These are measured results from the committed training pipeline, not projected targets.
+These results come from the training and evaluation pipeline in this repository.
 
 ## Anomaly detection — LogHub HDFS_v1
 
@@ -22,14 +22,14 @@ The committed precision-recall artifact contains 132 measured operating points. 
 | Normal | 111,620 | 25 |
 | Anomaly | 5 | 3,363 |
 
-## Root-cause classification — disclosed synthetic incidents
+## Root-cause classification — synthetic incidents
 
 - Macro F1: **1.0000**
 - Weighted F1: **1.0000**
 - Held-out test incidents: **150**
 - Held-out scenario families: **6**
 
-Each cause keeps one wording family completely outside training. These numbers measure generalization across authored templates, not real-world RCA accuracy.
+Each cause keeps one wording family completely outside training. These numbers measure generalization across synthetic templates, not real-world RCA accuracy.
 
 The held-out confusion matrix contains 150 correct predictions out of 150 incidents.
 
@@ -61,9 +61,9 @@ The runtime evaluator exercises all five built-in scenarios plus a redaction-sen
 ## Reproduce
 
 ```bash
-python -m loglens.cli download-data
-python -m loglens.cli train \
+uv run loglens download-data
+uv run loglens train \
   --structured data/downloads/hdfs_v1/Event_occurrence_matrix.csv \
   --labels data/downloads/hdfs_v1/anomaly_label.csv
-python -m loglens.cli evaluate-runtime
+uv run loglens evaluate-runtime
 ```

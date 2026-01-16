@@ -1,48 +1,37 @@
-# LogLens Product Record
+# Product notes
 
-## Platform
+## Who it is for
 
-Web application, optimized for desktop incident triage with a complete mobile reading flow.
+LogLens is built for support and SRE engineers doing a first pass on an unfamiliar incident. The desktop layout favors investigation speed, while the mobile layout keeps the same reading path for review and sharing.
 
-## Stack
-
-React and TypeScript for the interface; FastAPI, SQLite, pandas, scikit-learn, and XGBoost for the analysis service; Docker Compose for local delivery.
-
-## Users
-
-- Primary: support and SRE engineers performing the first pass on an unfamiliar incident.
-- Secondary: engineering interviewers evaluating whether the project demonstrates production-minded ML engineering rather than a tutorial clone.
-
-## Product purpose
+## Goal
 
 LogLens shortens first-pass log triage. It identifies unusual windows, proposes a probable root cause, and explains the conclusion with links to exact redacted log lines. Success means an engineer can move from an unfamiliar log to an auditable working hypothesis without treating a model output as unquestionable truth.
 
-## Positioning
+Most anomaly demos stop at a score. LogLens connects that score to a probable cause and to the lines that support it. It also keeps real anomaly evaluation separate from synthetic root-cause evaluation so the numbers remain interpretable.
 
-Most portfolio anomaly detectors stop at a score. LogLens joins anomaly detection, calibrated root-cause classification, and citation-validated explanations while keeping real anomaly evaluation separate from synthetic root-cause evaluation.
-
-## Operating context
+## Typical workflow
 
 Users inspect a bundled incident or upload a small plain-text log. They move across an incident timeline, select a suspicious window, inspect competing evidence, and read the underlying redacted transcript. The public demo is not intended for confidential production logs.
 
-## Capabilities and constraints
+## Boundaries
 
 - HDFS_v1 supplies real normal/anomaly traces; it does not supply root-cause labels.
-- A disclosed synthetic corpus supplies root-cause training and evaluation data.
+- A synthetic corpus supplies root-cause training and evaluation data.
 - Uploads are limited to 5 MB or 50,000 lines and are deleted after processing.
 - Raw log content is never persisted or sent to an external explanation service.
 - An external explanation API is optional; deterministic cited explanations are always available.
-- Public cloud hosting is deferred. The current delivery target is a verified local Docker deployment plus a cloud runbook.
+- The current deployment target is a single local Docker service. A Render configuration is included for later hosting.
 - Authentication, saved workspaces, real-time streaming, distributed workers, and an LSTM are outside the MVP.
 
-## Brand commitments
+## Voice and visual direction
 
 The name is LogLens. The product voice is calm, exact, and candid about uncertainty. The interface uses the metaphor of a flight recorder: replayable time, marked anomalies, and evidence that can be inspected after the fact.
 
-## Evidence on hand
+## Data used
 
 - Public HDFS_v1 log data and binary labels from LogHub.
-- Synthetic incident scenarios authored and labeled within this repository.
+- Synthetic incident scenarios created and labeled in this repository.
 - No customer testimonials, production deployment claims, or Oracle/customer data.
 
 ## Product principles

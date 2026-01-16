@@ -1,18 +1,17 @@
-# LogLens Design System
+# Interface design
 
 ## Product character
 
 LogLens should feel like a flight recorder opened after an incident: dense, calm, exact, and built for scrutiny. It is an operating surface, not a marketing dashboard. The interface foregrounds time, confidence, and evidence while keeping uncertainty visible.
 
-## Direction contract
+## Design goals
 
-- **THESIS:** Evidence before inference; a flight-recorder console that refuses the KPI-first dashboard.
-- **OWN-WORLD:** Near-black blue fields, one-pixel instrument frames, Inter plus mono data, cyan signals, amber selection, and coral faults.
-- **STORY:** Choose a safe source, replay scored windows, inspect a probable cause, then follow exact redacted citations into the transcript.
-- **FIRST VIEWPORT:** A 62px command bar tops a 252px source rail, flexible scored timeline, 332px diagnosis rail, and transcript below; the amber replay action stays in the source rail.
-- **FORM:** User-pinned flight-recorder control surface, position 1 of 1; seed `loglens-flight-recorder-v1`.
+- Make the path from anomaly to cause to evidence visible in one screen.
+- Use a flight-recorder visual language without making the interface feel theatrical.
+- Keep uncertainty, system health, loading, and failure states explicit.
+- Preserve the full investigation flow on small screens.
 
-## Quality bar
+## Interaction rules
 
 The first viewport must show the full source → score → diagnosis → citation path without inventing measurements. Every signal bar is derived from an API anomaly score. Window selection must update diagnosis, evidence, filters, focus, and announcements as one state change. Core evidence text remains at least 11 pixels with WCAG AA contrast. API readiness, uncertainty, synthetic scope, fallback mode, and retention are never implied by color alone. At 390 pixels the same reasoning path remains complete in reading order.
 

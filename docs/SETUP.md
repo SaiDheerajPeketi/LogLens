@@ -1,6 +1,6 @@
 # LogLens Setup Guide
 
-This guide covers the verified Docker demo, native development, data acquisition, training, testing, configuration, and common failures.
+This guide covers Docker, native development, data acquisition, training, testing, configuration, and common failures.
 
 ## Prerequisites
 
@@ -30,7 +30,7 @@ Some installations expose Compose as a standalone command. Use this equivalent f
 docker-compose up --build
 ```
 
-The verified local build used Docker 29.5.2, Docker Compose 5.2.0, and the standalone command. The container runs as a non-root user and stores only redacted derived state in the `loglens-runtime` named volume.
+The container runs as a non-root user and stores only redacted derived state in the `loglens-runtime` named volume.
 
 To stop the service without deleting results:
 
@@ -146,7 +146,7 @@ npm run test:e2e --prefix frontend
 
 The Playwright suite expects `http://127.0.0.1:8080` by default. Override it with `LOGLENS_E2E_URL` when testing another authorized environment.
 
-## Clean production verification
+## Production build check
 
 ```bash
 docker compose up --detach --build
@@ -182,6 +182,6 @@ That is expected when `OPENAI_API_KEY` is absent. When a key is present, timeout
 
 The queue lives in one process. Work interrupted by restart is marked failed. Built-in scenarios can be retried; uploads must be resubmitted because raw bytes are not retained.
 
-## Later cloud deployment
+## Cloud deployment
 
-See [the deployment runbook](DEPLOYMENT.md). The project currently claims only the verified local deployment.
+See [the deployment notes](DEPLOYMENT.md) for the included single-instance Render configuration and its limits.

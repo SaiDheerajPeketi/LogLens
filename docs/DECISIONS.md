@@ -1,263 +1,57 @@
-# Engineering Decision Journal
+# Engineering decisions
 
-This journal records the decisions that materially shape LogLens. Each entry states what was decided, why it was chosen, what it costs, and what evidence would justify revisiting it.
+This document records the choices that are easiest to misunderstand when reading the code. It is intentionally short; implementation details belong beside the implementation.
 
-## 001 — Build a portfolio MVP before a production pilot
+## Keep anomaly detection and root-cause evaluation separate
 
-- **Context:** The project must be achievable, deployable, and useful in interviews without pretending to be a production observability platform.
-- **Options considered:** notebook-only research demo; four-week portfolio MVP; multi-user production pilot.
-- **Decision:** Build a four-week portfolio MVP with a polished application, reproducible evaluation, and explicit non-goals.
-- **Why:** It demonstrates ML, API, product, evaluation, and delivery skills while keeping the scope finishable.
-- **Tradeoffs:** Authentication, streaming ingestion, distributed queues, and durable cloud workspaces are deferred.
-- **Evidence:** The project blueprint prioritizes a deployed, evaluated first project over a broader unfinished system.
-- **Revisit when:** Real users require saved workspaces, sustained throughput, or integrations.
-- **Implementation:** Product foundation; `docs: record the initial product decisions`.
+LogHub HDFS_v1 has reliable normal/anomaly labels, but it does not have root-cause labels. LogLens therefore uses HDFS only for anomaly evaluation and a separate synthetic dataset for root-cause classification. The UI and documentation never present the synthetic score as production accuracy.
 
-## 002 — Keep anomaly and root-cause evidence separate
+## Split HDFS data by block ID
 
-- **Context:** HDFS_v1 provides trace-level anomaly labels but not root-cause categories.
-- **Options considered:** imply root-cause labels exist; make the entire dataset synthetic; combine real anomaly data with disclosed synthetic RCA data.
-- **Decision:** Evaluate anomaly detection on HDFS_v1 and root-cause classification on a separately disclosed synthetic corpus.
-- **Why:** It preserves external validity for anomaly detection without inventing labels.
-- **Tradeoffs:** Metrics cannot be collapsed into one end-to-end score, and synthetic RCA performance has narrower claims.
-- **Evidence:** The official HDFS_v1 documentation describes normal/anomaly labels only.
-- **Revisit when:** A legally usable, incident-level dataset with reliable cause labels becomes available.
-- **Implementation:** Dataset and evaluation pipeline; `docs: record the initial product decisions`.
+Rows from one HDFS block trace are kept in the same train, validation, or test split. This prevents events from the same incident appearing on both sides of the evaluation boundary.
 
-## 003 — Use React with a FastAPI analysis service
+The anomaly threshold is selected on validation data under a 5% false-positive-rate ceiling, then measured once on the test set.
 
-- **Context:** The project must demonstrate both ML engineering and a credible operational interface.
-- **Options considered:** Streamlit monolith; Streamlit with FastAPI; React with FastAPI.
-- **Decision:** Use React/TypeScript and FastAPI.
-- **Why:** It cleanly separates the analysis contract from the interface and demonstrates production-oriented full-stack engineering.
-- **Tradeoffs:** More code, build tooling, and test surface than Streamlit.
-- **Evidence:** The portfolio goal values product engineering breadth, while Docker keeps local setup bounded.
-- **Revisit when:** A research-only branch is needed for rapid experiment review.
-- **Implementation:** Application scaffold; `docs: record the initial product decisions`.
+## Hold out complete wording families for root-cause tests
 
-## 004 — Design explanations as an optional adapter
+Randomly splitting individual synthetic lines would make the root-cause task too easy. Each cause keeps one full wording family outside training so the test measures generalization to unseen phrasing.
 
-- **Context:** Plain-English explanations improve usability, but the analysis must remain reproducible without credentials or network access.
-- **Options considered:** require an external model; use templates only; optional API with deterministic fallback.
-- **Decision:** Put the external explanation service behind an interface and validate all citations, with a deterministic fallback for every failure mode.
-- **Why:** The core result stays available, safe, and testable while still demonstrating structured model integration.
-- **Tradeoffs:** Two explanation paths must be maintained and tested.
-- **Evidence:** Citation integrity matters more than prose quality for an audit-oriented tool.
-- **Revisit when:** A local model can meet the same latency and faithfulness requirements within the deployment budget.
-- **Implementation:** Explanation service; `docs: record the initial product decisions`.
+## Use two runtime scoring paths
 
-## 005 — Deliver locally before selecting a cloud host
+The packaged XGBoost model expects the HDFS event vocabulary and is used for the HDFS benchmark. Arbitrary uploads use a generic score based on severity density and event-template rarity. This avoids applying the HDFS model to unrelated logs while still providing a useful ranking.
 
-- **Context:** A public URL was requested initially, then explicitly deferred.
-- **Options considered:** deploy immediately; temporary tunnel; verified local Docker deployment with a cloud runbook.
-- **Decision:** Verify Docker Compose locally and document a direct cloud path without claiming a live public deployment.
-- **Why:** It honors the latest delivery boundary and keeps the portfolio honest.
-- **Tradeoffs:** The live-demo checklist remains open until hosting is authorized.
-- **Evidence:** The selected scope explicitly defers public cloud hosting.
-- **Revisit when:** A hosting account and acceptable cost/cold-start policy are chosen.
-- **Implementation:** Delivery tooling; `docs: record the initial product decisions`.
+## Prefer correlation IDs, then timestamps, then line windows
 
-## 006 — Use a flight-recorder operating model
+LogLens groups events using the strongest structure available:
 
-- **Context:** The interface must make anomaly, cause, and evidence relationships understandable during triage.
-- **Options considered:** generic observability dashboard; forensic case file; seismic station; flight recorder.
-- **Decision:** Organize the workspace around a replayable incident timeline with synchronized evidence.
-- **Why:** It makes time, anomaly markers, and post-incident inspection part of one coherent interaction.
-- **Tradeoffs:** Dense timeline behavior requires careful responsive and keyboard design.
-- **Evidence:** The selected concept directly supports the product's evidence-first mechanism.
-- **Revisit when:** User testing shows the timeline slows down rather than accelerates first-pass triage.
-- **Implementation:** Web interface; `docs: record the initial product decisions`.
+1. correlation or block identifiers when they cover most lines;
+2. five-minute timestamp windows;
+3. overlapping 200-line windows as a deterministic fallback.
 
-## 007 — Use a single Python package at the repository root
+## Redact before parsing or persistence
 
-- **Context:** Training, evaluation, and serving need to share schemas and feature logic without publishing several internal packages.
-- **Options considered:** separate packages for API and ML; an unstructured scripts directory; one installable package with offline CLI commands.
-- **Decision:** Use one installable `loglens` Python package and keep the web application as a separate frontend workspace.
-- **Why:** It prevents train/serve drift while leaving the user interface independently buildable.
-- **Tradeoffs:** Optional ML and API dependencies install together in the MVP.
-- **Evidence:** The deployment is one Docker service and the planned model footprint is intentionally small.
-- **Revisit when:** Training requires a materially different runtime or deployment cadence.
-- **Implementation:** Python project and service scaffold; `chore: scaffold the analysis service`.
+Raw uploads are processed in memory. Redaction happens before parsing, model input, persistence, or any optional external explanation call. Only redacted derived results are stored, and they expire after 24 hours.
 
-## 008 — Redact before parsing, persistence, or explanation
+## Treat generated prose as an untrusted presentation layer
 
-- **Context:** Log lines can contain secrets and personal or infrastructure identifiers, while parsing still needs stable relationships within one analysis.
-- **Options considered:** reject all uploads; redact only before external API calls; redact immediately with stable per-analysis aliases.
-- **Decision:** Validate and redact each line before feature extraction, persistence, or explanation, using salted aliases that remain stable only within one analysis.
-- **Why:** The pipeline preserves useful recurrence without retaining original sensitive values.
-- **Tradeoffs:** Redaction can remove features that might help a classifier and cannot guarantee detection of every proprietary secret format.
-- **Evidence:** The public demo explicitly warns against confidential logs and treats redaction as defense in depth.
-- **Revisit when:** A production pilot supplies a formal data-classification policy or requires an on-premises-only mode.
-- **Implementation:** Ingestion pipeline; `feat: validate and redact uploaded logs`.
+The explanation step receives a predicted cause and a small set of selected, redacted evidence lines. It cannot choose new evidence. Its output follows a strict schema, and every citation is checked locally. Missing credentials, timeouts, malformed output, and invalid citations all fall back to a deterministic explanation.
 
-## 009 — Select windows by evidence available in the log
+## Use calibrated linear classification for causes
 
-- **Context:** HDFS has block identifiers, many application logs have request IDs or timestamps, and some logs have neither.
-- **Options considered:** fixed line windows only; require a configured parser; use a deterministic precedence order.
-- **Decision:** Prefer correlation identifiers when they cover at least half the lines, then five-minute timestamp windows, then 200-line windows with 50-line overlap.
-- **Why:** It uses the strongest available grouping while keeping generic uploads analyzable.
-- **Tradeoffs:** Mixed-format logs may fall back to coarse windows, and overlapping windows require result deduplication.
-- **Evidence:** The precedence is deterministic and directly testable across representative formats.
-- **Revisit when:** Format-specific adapters or streaming sessions provide stronger boundaries.
-- **Implementation:** Ingestion pipeline; `feat: validate and redact uploaded logs`.
+TF-IDF with calibrated logistic regression gives useful probabilities and direct feature contributions for evidence ranking. A more complex model would be harder to inspect without improving the current synthetic benchmark.
 
-## 010 — Use XGBoost for anomaly detection and a calibrated linear RCA model
+## Keep runtime state simple
 
-- **Context:** The anomaly task has compact event-count features and severe imbalance; the RCA task must map evidence back to readable log lines.
-- **Options considered:** one opaque sequence model; two XGBoost models; XGBoost for anomaly plus calibrated linear text classification for RCA.
-- **Decision:** Use class-weighted XGBoost on HDFS event counts and calibrated logistic regression on synthetic incident TF-IDF features.
-- **Why:** The anomaly model captures nonlinear event interactions, while the RCA model keeps class evidence inspectable and confidence calibratable.
-- **Tradeoffs:** The models do not share a representation, and TF-IDF will miss unseen semantic paraphrases.
-- **Evidence:** On the full HDFS_v1 trace matrix, the anomaly model reached 0.9994 PR-AUC and 0.9956 F1; the held-out synthetic-family RCA test reached 1.0000 macro-F1.
-- **Revisit when:** A sequence or embedding model produces a meaningful held-out gain without breaking latency or evidence mapping.
-- **Implementation:** Offline ML pipeline; `feat: train reproducible anomaly and cause models`.
+SQLite stores redacted results and one bounded worker processes analyses. That is enough for local use and a single demo instance. Multiple replicas would require Postgres, a durable queue, authentication, and per-user authorization.
 
-## 012 — Evaluate on the complete HDFS_v1 trace matrix
+## Ship one production container
 
-- **Context:** The 100,000-line convenience subset contains only 7,940 traces and the first baseline reached 0.5081 PR-AUC, far below the acceptance target.
-- **Options considered:** tune against the small subset; report the small-subset limitation; use the official complete HDFS_v1 preprocessed trace matrix.
-- **Decision:** Download the checksum-pinned LogHub HDFS_v1 archive and evaluate on its 575,061 block-level traces.
-- **Why:** It matches the dataset named in the project scope and supplies enough anomaly diversity for a credible held-out evaluation.
-- **Tradeoffs:** The download is 186 MB compressed, the extracted assets are excluded from Git, and initial setup takes longer.
-- **Evidence:** Without changing the test threshold after inspection, the complete trace matrix produced 0.9994 PR-AUC, 0.9956 F1, and a 0.0002 false-positive rate on 115,013 held-out traces.
-- **Revisit when:** LogHub publishes a corrected version, or a deployment-specific labeled corpus is available.
-- **Implementation:** Dataset acquisition and offline evaluation; `feat: train reproducible anomaly and cause models`.
+The frontend is compiled in a Node build stage and served by FastAPI from a non-root Python container. One service keeps local setup simple and matches the current single-instance storage model.
 
-## 013 — Separate benchmark scoring from generic-upload scoring
+## Test the user-visible workflow in a browser
 
-- **Context:** The HDFS model consumes 29 HDFS event IDs, while arbitrary uploaded logs have unrelated event-template vocabularies.
-- **Options considered:** force generic templates into the HDFS feature slots; claim the HDFS metric applies to uploads; use a disclosed generic severity-and-rarity score while keeping HDFS evaluation separate.
-- **Decision:** Use XGBoost for HDFS block traces and a deterministic severity-density plus template-rarity score for generic runtime windows.
-- **Why:** It avoids a silent train/serve schema mismatch and keeps the public claim bounded to the data actually evaluated.
-- **Tradeoffs:** The generic anomaly score is heuristic and does not inherit the HDFS PR-AUC or F1.
-- **Evidence:** Feature inspection showed that HDFS has a fixed E1–E29 vocabulary, whereas scenario and upload templates are open-ended text.
-- **Revisit when:** A representative labeled cross-application log corpus supports training a portable event-template model.
-- **Implementation:** Runtime analysis engine and model card; `feat: process analyses through the cited evidence API`.
+Playwright covers built-in analysis, uploads, no-anomaly results, low-confidence results, deterministic explanation fallback, keyboard navigation, and citation focus against the production container.
 
-## 014 — Use SQLite with one bounded in-process worker
+## Keep the interface evidence-first
 
-- **Context:** The local demo needs asynchronous status, restart handling, and bounded resource use without operating external infrastructure.
-- **Options considered:** synchronous requests; Redis and Celery; SQLite plus a bounded single-worker queue.
-- **Decision:** Persist redacted state in SQLite for 24 hours and process jobs with one bounded worker thread.
-- **Why:** It demonstrates the lifecycle contract while keeping Docker setup to one service and preventing concurrent model spikes.
-- **Tradeoffs:** Work does not survive as queued work across process loss, one process is required, and horizontal scaling needs a real broker.
-- **Evidence:** Integration tests cover queued acceptance, completion, restart interruption, expiry deletion, and retry boundaries.
-- **Revisit when:** Throughput or availability requires multiple application processes or durable queue semantics.
-- **Implementation:** Analysis store, service, and public API; `feat: process analyses through the cited evidence API`.
-
-## 015 — Treat external prose as an untrusted rendering step
-
-- **Context:** An external explanation can improve readability but must not invent evidence, change the classifier outcome, or retain uploaded data.
-- **Options considered:** free-form generation; require the external service; strict structured output with local validation and fallback.
-- **Decision:** Send only selected redacted evidence and derived prediction metadata through the Responses API with storage disabled, enforce a strict schema, validate every citation locally, and fall back deterministically on any failure.
-- **Why:** The evidence relationship remains testable and the product still works without credentials or network access.
-- **Tradeoffs:** Generated prose is constrained, and invalid but otherwise useful responses are discarded.
-- **Evidence:** Tests reject out-of-set citations, verify storage is disabled, and prove malformed primary output resolves to cited deterministic prose.
-- **Revisit when:** A local explanation model can meet the same faithfulness and latency requirements.
-- **Implementation:** Explanation adapter and citation guard; `feat: process analyses through the cited evidence API`.
-
-## 016 — Make evidence navigation the primary interface action
-
-- **Context:** A conventional dashboard can show scores but leaves the operator to reconnect a prediction with the source lines manually.
-- **Options considered:** card-based analytics dashboard; separate result and raw-log pages; flight-recorder workspace with synchronized timeline, diagnosis, and transcript.
-- **Decision:** Use a compact left source rail, central replay timeline, right diagnosis rail, and lower transcript, with every evidence item acting as a direct focus link to its cited line.
-- **Why:** The layout exposes the product's differentiator—the relationship between anomaly, cause, and exact evidence—without requiring page changes.
-- **Tradeoffs:** Dense desktop information architecture needs a separate stacked mobile order and horizontal window replay.
-- **Evidence:** Desktop and 390-pixel visual checks preserve source selection, anomaly replay, diagnosis, and cited transcript reading; interaction tests cover arrow-key windows and focus transfer to evidence.
-- **Revisit when:** Operator testing shows a different first action or the diagnosis rail obscures rather than accelerates triage.
-- **Implementation:** Flight-recorder React interface; `feat: build the flight recorder analysis console`.
-
-## 011 — Tune the anomaly threshold on validation data
-
-- **Context:** The default probability threshold does not encode the product's false-alarm budget, and selecting on test data would leak evaluation information.
-- **Options considered:** fixed 0.5 threshold; maximize test F1; scan validation thresholds under a 5% false-positive constraint.
-- **Decision:** Select the highest-validation-F1 threshold among candidates with false-positive rate at or below 5%, then evaluate it once on held-out test traces.
-- **Why:** It ties the classifier to an operational cost while preserving the test set for honest reporting.
-- **Tradeoffs:** The selected threshold depends on the demo subset's prevalence and must be recalibrated for a new environment.
-- **Evidence:** The evaluation report records threshold, FPR, PR-AUC, F1, and a 10:1 missed-anomaly cost score.
-- **Revisit when:** Pilot data supplies a different base rate or explicit incident costs.
-- **Implementation:** Offline ML pipeline; `feat: train reproducible anomaly and cause models`.
-
-## 017 — Ship one CPU-only production container
-
-- **Context:** The local demo needs one reproducible command, durable SQLite state, production frontend assets, and the trained models without requiring GPU support.
-- **Options considered:** separate frontend and API containers; a development-server composition; one multi-stage image that serves the compiled interface from FastAPI.
-- **Decision:** Build the React interface in a Node stage, install the Python service with the official CPU-only XGBoost distribution on Linux, and run one non-root FastAPI container with a named SQLite volume.
-- **Why:** One service keeps the portfolio demo and later single-service cloud deployment understandable while preserving the same API boundary used in development.
-- **Benefits:** The container has an explicit health check, persists only redacted derived state, and avoids shipping unused GPU libraries.
-- **Tradeoffs:** Frontend and backend releases are coupled, the SQLite volume constrains horizontal scaling, and local hot reload still uses the native development commands.
-- **Evidence:** A clean Compose build served the production interface and completed a database-timeout analysis at port 8080; the healthy CPU-only image measured 178,490,743 bytes.
-- **Reconsideration trigger:** Split the services and replace SQLite when independent scaling, a CDN, or multiple application replicas become necessary.
-- **Related implementation:** Dockerfile, Compose service, static asset routing, and CI; `chore: package the local demo with Docker`.
-
-## 018 — Exercise the product contract in a real browser
-
-- **Context:** Component and API tests can pass while focus transfer, uploads, polling, responsive layout, or the production asset bundle fails at the browser boundary.
-- **Options considered:** rely on unit tests; keep a manual QA checklist; run Playwright against the composed production service.
-- **Decision:** Cover the built-in incident, uploaded log, no-anomaly result, low-confidence human-review result, and forced deterministic fallback in Chromium against the Docker URL.
-- **Why:** These are the five user-visible paths where the API, queue, models, evidence navigation, and interface must work together.
-- **Benefits:** The same harness produces reproducible desktop and mobile screenshots from measured product states and verifies keyboard focus reaches a cited transcript row.
-- **Tradeoffs:** CI downloads a browser and the suite depends on the container reaching health first.
-- **Evidence:** All five workflows passed against the production image; captured views cover 1440-pixel desktop and 390-pixel mobile layouts.
-- **Reconsideration trigger:** Add browsers or visual-regression baselines when cross-browser support becomes a stated product requirement.
-- **Related implementation:** Playwright configuration, end-to-end suite, CI Docker job, and product screenshots; `test: verify complete analysis workflows`.
-
-## 019 — Measure integrity through the persisted runtime path
-
-- **Context:** Unit tests prove individual guards, but the acceptance claims require a concrete denominator for citation validity and proof that an upload is not written raw during normal processing.
-- **Options considered:** report test coverage qualitatively; count only deterministic explainer output; run all scenarios and a sensitive upload through the queue, models, and temporary database.
-- **Decision:** Provide an offline runtime evaluator that checks every returned citation against the selected evidence, injects one invalid citation, scans persistence for raw markers, and counts raw log files.
-- **Why:** It turns privacy and citation claims into repeatable measurements without sending data externally or retaining evaluation input.
-- **Benefits:** The result is machine-readable, fast enough for CI, and exercises the same service and SQLite path as the application.
-- **Tradeoffs:** Six authored cases do not estimate real-world explanation usefulness, and marker scanning cannot prove redaction catches every possible sensitive format.
-- **Evidence:** Six of six analyses passed, all 15 returned citations were valid, the invalid citation was rejected, and zero raw files or raw markers remained.
-- **Reconsideration trigger:** Expand the corpus and privacy probes when representative customer formats or a formal data-classification standard become available.
-- **Related implementation:** Runtime evaluation command, CI integrity step, and evaluation artifact; `test: measure runtime citation integrity`.
-
-## 020 — Keep public hosting deferred and document a single-instance path
-
-- **Context:** The project needs a concrete deployment route, but making an upload surface public adds cost, abuse, privacy, and operational obligations that have not been reviewed.
-- **Options considered:** claim a temporary free-tier URL; deploy the current container without persistent storage; defer hosting while committing a Render Blueprint and runbook.
-- **Decision:** Claim only the verified local Compose demo and provide a later Render Docker deployment with one persistent SQLite disk, explicit health checks, and a documented migration boundary.
-- **Why:** It proves packaging and cloud readiness without implying an unattended public upload service is production-safe.
-- **Benefits:** The path uses the same image and health contract, preserves the 24-hour redacted results, and makes cost and scaling constraints explicit before creation.
-- **Tradeoffs:** There is no public live URL; an attached Render disk requires a paid single instance and disables zero-downtime deploys.
-- **Evidence:** The committed production image is healthy locally at port 8080, and the Blueprint maps its only mutable path and HTTP health endpoint using Render's documented fields.
-- **Reconsideration trigger:** Deploy only after hosted browser tests, retention checks, privacy review, abuse controls, and an owner for ongoing cost and incident response are in place.
-- **Related implementation:** Setup guide, Render Blueprint, cloud runbook, and README delivery status; `docs: publish setup and delivery guidance`.
-
-## 021 — Use a silent, evidence-led product walkthrough
-
-- **Context:** The portfolio needs a one-minute walkthrough that demonstrates the product, cites measured results, and remains honest about the delivery boundary.
-- **Options considered:** narrated screen recording; synthetic interface animation; a silent motion-design sequence built from verified product captures.
-- **Decision:** Produce a six-scene, silent walkthrough from the real console and evaluation captures, with on-screen pacing for incident replay, cause confidence, cited evidence, held-out metrics, architecture, and repository status.
-- **Why:** The product's differentiator is visual and inspectable, while avoiding narration keeps the artifact portable and makes every claim readable in the frame itself.
-- **Benefits:** The video shows the actual interface, preserves exact metrics, includes deterministic fallback and citation behavior, and explicitly says public hosting is deferred.
-- **Tradeoffs:** The 15.05 MB MP4 is larger than a compressed social clip, and the absence of narration requires deliberate reading beats and typography.
-- **Evidence:** The final render is exactly 60.000 seconds, 1920×1080, H.264 High profile, yuv420p, and 30 fps; the final HyperFrames audit reported zero layout errors, zero motion errors or warnings, and WCAG AA contrast for all sampled text.
-- **Reconsideration trigger:** Add narration, captions, or a shorter derivative only when a target platform or accessibility review requires it.
-- **Related implementation:** Walkthrough source, poster, MP4, and README link; `feat(video): deliver the verified walkthrough`.
-
-## 022 — Make every console signal and state operationally truthful
-
-- **Context:** The finish review found that decorative waveform samples, analysis-wide prose, a permanently green health label, hidden citations under active filters, and very small low-contrast evidence text could imply facts or states the selected window did not support.
-- **Options considered:** label the original waveform schematic; keep global explanation prose and add a caveat; derive every visible signal and dependent view from the selected API result.
-- **Decision:** Render one score bar per returned analysis window, show analysis prose only when its cause and citations match the selected window, reset transcript filters during window or citation navigation, expose evidence loading explicitly, and derive the header state from the health endpoint. Ship Inter locally, raise core evidence text to at least 11 pixels, lighten quiet text, and remove redundant ornamental labels.
-- **Why:** An incident-analysis interface must not fabricate temporal detail, preserve stale diagnosis, conceal a cited row, or claim readiness after the API has failed.
-- **Benefits:** Timeline height now maps directly to anomaly score; selection, diagnosis, evidence, transcript, focus, and reduced-motion behavior agree; health and loading failures are visible in text as well as color; keyboard and low-vision reading paths are stronger.
-- **Tradeoffs:** The score series is visually sparser, filters reset when analytical context changes, and the bundled font adds production asset weight.
-- **Evidence:** Component tests cover truthful health, window-specific explanations, filter reset, citation focus, and evidence loading; desktop and 390-pixel captures are independently reviewed against the persisted direction contract and quality bar.
-- **Reconsideration trigger:** Revisit the score visualization only when the API exposes genuine within-window time-series samples, and revisit font sizing after operator testing at realistic transcript density.
-- **Related implementation:** React console state, health client, typography and accessibility styles, design contract, and regression tests; `fix: make the incident console truthful and accessible`.
-
-## 023 — Keep repository visibility private until an owner-led release
-
-- **Context:** The delivery plan originally included a public GitHub repository, but changing visibility would immediately expose the source and its history outside the approved audience.
-- **Options considered:** publish the repository after the final audit; keep it private while retaining a release-ready history and documentation.
-- **Decision:** Leave `SaiDheerajPeketi/LogLens` private and treat public source availability as deferred.
-- **Why:** The owner explicitly requested that the existing private visibility remain unchanged.
-- **Benefits:** Access stays controlled without altering the implementation, validation record, or later publication path.
-- **Tradeoffs:** Unauthenticated readers cannot clone the repository or independently inspect the source, so the public-repository deliverable is not complete.
-- **Evidence:** The README now states that cloning requires owner-granted GitHub access and makes no public-access claim.
-- **Reconsideration trigger:** Change visibility only after the owner explicitly authorizes publication and repeats the privacy, history, secret, and clean-checkout audits.
-- **Related implementation:** Delivery-status and quick-start documentation; `docs: defer public repository visibility`.
+The main screen keeps source selection, scored windows, diagnosis, and the transcript together. Selecting a window updates every dependent view, and following a citation moves focus to the corresponding transcript line.
