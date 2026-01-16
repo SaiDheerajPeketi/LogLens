@@ -233,7 +233,7 @@ This journal records the decisions that materially shape LogLens. Each entry sta
 - **Decision:** Produce a six-scene, silent walkthrough from the real console and evaluation captures, with on-screen pacing for incident replay, cause confidence, cited evidence, held-out metrics, architecture, and repository status.
 - **Why:** The product's differentiator is visual and inspectable, while avoiding narration keeps the artifact portable and makes every claim readable in the frame itself.
 - **Benefits:** The video shows the actual interface, preserves exact metrics, includes deterministic fallback and citation behavior, and explicitly says public hosting is deferred.
-- **Tradeoffs:** The 14.99 MB MP4 is larger than a compressed social clip, and the absence of narration requires deliberate reading beats and typography.
+- **Tradeoffs:** The 15.05 MB MP4 is larger than a compressed social clip, and the absence of narration requires deliberate reading beats and typography.
 - **Evidence:** The final render is exactly 60.000 seconds, 1920×1080, H.264 High profile, yuv420p, and 30 fps; the final HyperFrames audit reported zero layout errors, zero motion errors or warnings, and WCAG AA contrast for all sampled text.
 - **Reconsideration trigger:** Add narration, captions, or a shorter derivative only when a target platform or accessibility review requires it.
 - **Related implementation:** Walkthrough source, poster, MP4, and README link; `feat(video): deliver the verified walkthrough`.
