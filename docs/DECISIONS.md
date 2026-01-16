@@ -123,6 +123,39 @@ This journal records the decisions that materially shape LogLens. Each entry sta
 - **Revisit when:** LogHub publishes a corrected version, or a deployment-specific labeled corpus is available.
 - **Implementation:** Dataset acquisition and offline evaluation; `feat: train reproducible anomaly and cause models`.
 
+## 013 — Separate benchmark scoring from generic-upload scoring
+
+- **Context:** The HDFS model consumes 29 HDFS event IDs, while arbitrary uploaded logs have unrelated event-template vocabularies.
+- **Options considered:** force generic templates into the HDFS feature slots; claim the HDFS metric applies to uploads; use a disclosed generic severity-and-rarity score while keeping HDFS evaluation separate.
+- **Decision:** Use XGBoost for HDFS block traces and a deterministic severity-density plus template-rarity score for generic runtime windows.
+- **Why:** It avoids a silent train/serve schema mismatch and keeps the public claim bounded to the data actually evaluated.
+- **Tradeoffs:** The generic anomaly score is heuristic and does not inherit the HDFS PR-AUC or F1.
+- **Evidence:** Feature inspection showed that HDFS has a fixed E1–E29 vocabulary, whereas scenario and upload templates are open-ended text.
+- **Revisit when:** A representative labeled cross-application log corpus supports training a portable event-template model.
+- **Implementation:** Runtime analysis engine and model card; `feat: process analyses through the cited evidence API`.
+
+## 014 — Use SQLite with one bounded in-process worker
+
+- **Context:** The local demo needs asynchronous status, restart handling, and bounded resource use without operating external infrastructure.
+- **Options considered:** synchronous requests; Redis and Celery; SQLite plus a bounded single-worker queue.
+- **Decision:** Persist redacted state in SQLite for 24 hours and process jobs with one bounded worker thread.
+- **Why:** It demonstrates the lifecycle contract while keeping Docker setup to one service and preventing concurrent model spikes.
+- **Tradeoffs:** Work does not survive as queued work across process loss, one process is required, and horizontal scaling needs a real broker.
+- **Evidence:** Integration tests cover queued acceptance, completion, restart interruption, expiry deletion, and retry boundaries.
+- **Revisit when:** Throughput or availability requires multiple application processes or durable queue semantics.
+- **Implementation:** Analysis store, service, and public API; `feat: process analyses through the cited evidence API`.
+
+## 015 — Treat external prose as an untrusted rendering step
+
+- **Context:** An external explanation can improve readability but must not invent evidence, change the classifier outcome, or retain uploaded data.
+- **Options considered:** free-form generation; require the external service; strict structured output with local validation and fallback.
+- **Decision:** Send only selected redacted evidence and derived prediction metadata through the Responses API with storage disabled, enforce a strict schema, validate every citation locally, and fall back deterministically on any failure.
+- **Why:** The evidence relationship remains testable and the product still works without credentials or network access.
+- **Tradeoffs:** Generated prose is constrained, and invalid but otherwise useful responses are discarded.
+- **Evidence:** Tests reject out-of-set citations, verify storage is disabled, and prove malformed primary output resolves to cited deterministic prose.
+- **Revisit when:** A local explanation model can meet the same faithfulness and latency requirements.
+- **Implementation:** Explanation adapter and citation guard; `feat: process analyses through the cited evidence API`.
+
 ## 011 — Tune the anomaly threshold on validation data
 
 - **Context:** The default probability threshold does not encode the product's false-alarm budget, and selecting on test data would leak evaluation information.

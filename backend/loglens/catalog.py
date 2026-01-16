@@ -1,40 +1,42 @@
-from .schemas import CauseClass, ModelCardSummary, ScenarioSummary
+from __future__ import annotations
 
-SCENARIOS = [
-    ScenarioSummary(
-        id="db-timeout-checkout",
-        name="Checkout database timeout",
-        description="A checkout service develops a burst of database timeouts after latency rises.",
-        expected_cause=CauseClass.DATABASE_TIMEOUT,
-        line_count=42,
-    ),
-    ScenarioSummary(
-        id="auth-token-expiry",
-        name="Authentication token failure",
-        description="Expired signing keys cause a cluster of rejected API requests.",
-        expected_cause=CauseClass.AUTHENTICATION_FAILURE,
-        line_count=36,
-    ),
-    ScenarioSummary(
-        id="pool-exhaustion-orders",
-        name="Connection pool exhaustion",
-        description="Queued order requests consume every available database connection.",
-        expected_cause=CauseClass.CONNECTION_POOL_EXHAUSTION,
-        line_count=48,
-    ),
-]
+import json
+from pathlib import Path
+
+from .schemas import ModelCardSummary
 
 
-MODEL_CARD = ModelCardSummary(
-    version="development-baseline",
-    anomaly_dataset="LogHub HDFS_v1 (evaluation pending)",
-    root_cause_dataset="LogLens synthetic incident corpus (evaluation pending)",
-    anomaly_metrics={},
-    root_cause_metrics={},
-    limitations=[
-        "HDFS_v1 provides binary anomaly labels, not root-cause labels.",
-        "Root-cause evaluation is performed separately on disclosed synthetic incidents.",
-        "The current manifest is replaced after the reproducible training run.",
-    ],
-)
-
+def load_model_card(model_dir: Path) -> ModelCardSummary:
+    manifest_path = model_dir / "manifest.json"
+    if not manifest_path.exists():
+        return ModelCardSummary(
+            version="unavailable",
+            anomaly_dataset="LogHub HDFS_v1",
+            root_cause_dataset="LogLens disclosed synthetic incident corpus",
+            anomaly_metrics={},
+            root_cause_metrics={},
+            limitations=["Packaged models are not available in the configured model directory."],
+        )
+    manifest = json.loads(manifest_path.read_text())
+    metrics = manifest["metrics"]
+    return ModelCardSummary(
+        version=manifest["version"],
+        anomaly_dataset="LogHub HDFS_v1 — 575,061 block traces",
+        root_cause_dataset="LogLens disclosed synthetic incident corpus",
+        anomaly_metrics={
+            name: float(metrics["anomaly"][name])
+            for name in ("pr_auc", "f1", "false_positive_rate", "threshold")
+        },
+        root_cause_metrics={
+            "macro_f1": float(metrics["root_cause"]["macro_f1"]),
+            "held_out_families": float(metrics["root_cause"]["held_out_families"]),
+        },
+        limitations=[
+            "HDFS evaluates binary anomaly detection, not root-cause classification.",
+            "Root-cause metrics use synthetic incidents and do not imply production accuracy.",
+            (
+                "Generic uploads use a deterministic severity-and-rarity anomaly score because "
+                "their event vocabulary differs from HDFS."
+            ),
+        ],
+    )

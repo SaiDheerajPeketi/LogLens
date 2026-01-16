@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
@@ -5,28 +7,35 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .api import router
-from .config import get_settings
+from .config import Settings, get_settings
+from .explainers import Explainer
+from .service import AnalysisService
 
 
-@asynccontextmanager
-async def lifespan(_: FastAPI) -> AsyncIterator[None]:
-    settings = get_settings()
-    if settings.database_url.startswith("sqlite:///"):
-        database_path = settings.database_url.removeprefix("sqlite:///")
-        from pathlib import Path
+def create_app(
+    settings: Settings | None = None,
+    *,
+    explainer: Explainer | None = None,
+) -> FastAPI:
+    active_settings = settings or get_settings()
 
-        Path(database_path).parent.mkdir(parents=True, exist_ok=True)
-    yield
+    @asynccontextmanager
+    async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+        service = AnalysisService(active_settings, explainer=explainer)
+        app.state.analysis_service = service
+        service.start()
+        try:
+            yield
+        finally:
+            service.stop()
 
-
-def create_app() -> FastAPI:
-    settings = get_settings()
     app = FastAPI(
-        title=settings.app_name,
+        title=active_settings.app_name,
         version="0.1.0",
         description="Evidence-first log anomaly detection and root-cause analysis.",
         lifespan=lifespan,
     )
+    app.state.settings = active_settings
     app.add_middleware(
         CORSMiddleware,
         allow_origins=["http://localhost:5173", "http://localhost:8080"],
@@ -39,4 +48,3 @@ def create_app() -> FastAPI:
 
 
 app = create_app()
-
