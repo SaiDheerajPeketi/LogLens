@@ -1,0 +1,404 @@
+<template>
+  <style>
+    #root {
+      position: relative;
+      width: 1920px;
+      height: 1080px;
+      overflow: hidden;
+      container-type: size;
+      color: #e9eee9;
+      font-family: sans-serif;
+      font-synthesis: none;
+    }
+
+    #root *,
+    #root *::before,
+    #root *::after {
+      box-sizing: border-box;
+    }
+
+    .f06-background {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    .f06-background-dark {
+      z-index: 0;
+      background: #071015;
+    }
+
+    .f06-background-orange {
+      z-index: 1;
+      background: #f1a33c;
+      opacity: 0;
+    }
+
+    .f06-swap-wrap {
+      position: absolute;
+      inset: 0 0 auto 0;
+      z-index: 2;
+      width: 100%;
+      height: 896px;
+      overflow: hidden;
+    }
+
+    .f06-pipeline,
+    .f06-orange-stage {
+      position: absolute;
+      inset: 0;
+      transform-origin: 50% 50%;
+    }
+
+    .f06-pipeline {
+      z-index: 1;
+      color: #e9eee9;
+    }
+
+    .f06-orange-stage {
+      z-index: 2;
+      color: #071015;
+      opacity: 0;
+    }
+
+    .f06-boundary {
+      position: absolute;
+      top: 294px;
+      left: 104px;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      color: #f1a33c;
+      font-family: monospace;
+      font-size: 0.84cqw;
+      font-weight: 500;
+      line-height: 1;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .f06-boundary::before {
+      width: 36px;
+      height: 2px;
+      background: #f1a33c;
+      content: "";
+    }
+
+    .f06-rail {
+      position: absolute;
+      top: 380px;
+      left: 104px;
+      width: 1712px;
+      height: 112px;
+    }
+
+    .f06-connectors {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      width: 1712px;
+      height: 112px;
+      overflow: visible;
+    }
+
+    .f06-connector {
+      fill: none;
+      stroke: #f1a33c;
+      stroke-width: 1.5;
+      stroke-linecap: square;
+      stroke-linejoin: miter;
+      vector-effect: non-scaling-stroke;
+    }
+
+    .f06-nodes {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: repeat(7, 200px);
+      column-gap: 52px;
+    }
+
+    .f06-node {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 200px;
+      height: 112px;
+      border-top: 1px solid #282726;
+      border-bottom: 1px solid #282726;
+      background: #071015;
+      color: #e9eee9;
+      font-size: 1.67cqw;
+      font-weight: 800;
+      line-height: 1;
+      letter-spacing: -0.025em;
+      opacity: 0;
+    }
+
+    .f06-node:first-child {
+      border-top-color: #f1a33c;
+    }
+
+    .f06-brand-row {
+      position: absolute;
+      top: 228px;
+      left: 640px;
+      display: flex;
+      align-items: baseline;
+      gap: 54px;
+      width: max-content;
+      white-space: nowrap;
+    }
+
+    .f06-brand {
+      flex: 0 0 auto;
+      color: #071015;
+      font-size: 8.75cqw;
+      font-weight: 900;
+      line-height: 0.88;
+      letter-spacing: -0.04em;
+    }
+
+    .f06-repository {
+      flex: 0 0 auto;
+      color: #071015;
+      font-family: monospace;
+      font-size: 1.56cqw;
+      font-weight: 600;
+      line-height: 1;
+      letter-spacing: 0.01em;
+      clip-path: inset(0 100% 0 0);
+    }
+
+    .f06-proofs {
+      position: absolute;
+      top: 476px;
+      left: 600px;
+      display: grid;
+      gap: 21px;
+      width: 720px;
+    }
+
+    .f06-proof {
+      position: relative;
+      min-height: 33px;
+      padding-left: 38px;
+      color: #071015;
+      font-size: 1.67cqw;
+      font-weight: 700;
+      line-height: 1;
+      letter-spacing: -0.02em;
+      opacity: 0;
+    }
+
+    .f06-proof::before {
+      position: absolute;
+      top: 0;
+      left: 0;
+      color: rgba(17, 17, 17, 0.55);
+      font-family: monospace;
+      font-weight: 500;
+      content: "/";
+    }
+
+    .f06-principle {
+      position: absolute;
+      top: 694px;
+      left: 250px;
+      width: 1412px;
+      height: 82px;
+    }
+
+    .f06-principle-rule {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 1412px;
+      height: 2px;
+      overflow: visible;
+    }
+
+    .f06-principle-rule path {
+      fill: none;
+      stroke: rgba(17, 17, 17, 0.40);
+      stroke-width: 1;
+      vector-effect: non-scaling-stroke;
+    }
+
+    .f06-principle-text {
+      position: absolute;
+      top: 23px;
+      left: 0;
+      color: rgba(17, 17, 17, 0.75);
+      font-family: monospace;
+      font-size: 1.46cqw;
+      font-weight: 600;
+      line-height: 1;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      white-space: nowrap;
+      clip-path: inset(0 100% 0 0);
+    }
+  </style>
+
+  <div data-hf-id="hf-fryi" id="root" data-composition-id="06-inspect-system" data-width="1920" data-height="1080">
+    <div data-hf-id="hf-304u" id="f06-background-dark" class="clip f06-background f06-background-dark" data-start="0" data-duration="8" data-track-index="0" aria-hidden="true"></div>
+    <div data-hf-id="hf-kiyl" id="f06-background-orange" class="clip f06-background f06-background-orange" data-start="0" data-duration="8" data-track-index="1" aria-hidden="true"></div>
+
+    <div data-hf-id="hf-qlfl" class="clip f06-swap-wrap" data-start="0" data-duration="8" data-track-index="2">
+      <section data-hf-id="hf-bu7w" id="f06-pipeline" class="f06-pipeline" aria-label="LogLens processing pipeline">
+        <div data-hf-id="hf-3nwq" id="f06-boundary" class="f06-boundary">privacy boundary first</div>
+        <div data-hf-id="hf-ox0l" class="f06-rail">
+          <svg data-hf-id="hf-oabr" class="f06-connectors" viewBox="0 0 1712 112" aria-hidden="true">
+            <path data-hf-id="hf-cyrf" id="f06-connector-1" class="f06-connector" d="M 200 56 H 252 M 242 48 L 252 56 L 242 64" />
+            <path data-hf-id="hf-jdnh" id="f06-connector-2" class="f06-connector" d="M 452 56 H 504 M 494 48 L 504 56 L 494 64" />
+            <path data-hf-id="hf-64us" id="f06-connector-3" class="f06-connector" d="M 704 56 H 756 M 746 48 L 756 56 L 746 64" />
+            <path data-hf-id="hf-vef8" id="f06-connector-4" class="f06-connector" d="M 956 56 H 1008 M 998 48 L 1008 56 L 998 64" />
+            <path data-hf-id="hf-do02" id="f06-connector-5" class="f06-connector" d="M 1208 56 H 1260 M 1250 48 L 1260 56 L 1250 64" />
+            <path data-hf-id="hf-2rl5" id="f06-connector-6" class="f06-connector" d="M 1460 56 H 1512 M 1502 48 L 1512 56 L 1502 64" />
+          </svg>
+          <div data-hf-id="hf-ywjg" class="f06-nodes">
+            <div data-hf-id="hf-5wc1" id="f06-node-1" class="f06-node">redact</div>
+            <div data-hf-id="hf-hvwi" id="f06-node-2" class="f06-node">parse</div>
+            <div data-hf-id="hf-95i1" id="f06-node-3" class="f06-node">features</div>
+            <div data-hf-id="hf-22ce" id="f06-node-4" class="f06-node">anomaly</div>
+            <div data-hf-id="hf-lxt7" id="f06-node-5" class="f06-node">cause</div>
+            <div data-hf-id="hf-qw06" id="f06-node-6" class="f06-node">evidence</div>
+            <div data-hf-id="hf-985l" id="f06-node-7" class="f06-node">explain</div>
+          </div>
+        </div>
+      </section>
+
+      <section data-hf-id="hf-tj6p" id="f06-orange-stage" class="f06-orange-stage" aria-label="LogLens repository details">
+        <div data-hf-id="hf-mh00" id="f06-brand-row" class="f06-brand-row">
+          <div data-hf-id="hf-ixn2" class="f06-brand">LogLens</div>
+          <div data-hf-id="hf-8csc" id="f06-repository" class="f06-repository">github.com/SaiDheerajPeketi/LogLens</div>
+        </div>
+
+        <div data-hf-id="hf-h65g" class="f06-proofs">
+          <div data-hf-id="hf-g029" id="f06-proof-1" class="f06-proof">MIT licensed</div>
+          <div data-hf-id="hf-1ghh" id="f06-proof-2" class="f06-proof">verified local Docker demo</div>
+          <div data-hf-id="hf-i9uy" id="f06-proof-3" class="f06-proof">public hosting deferred</div>
+        </div>
+
+        <div data-hf-id="hf-n1dv" class="f06-principle">
+          <svg data-hf-id="hf-tcu7" class="f06-principle-rule" viewBox="0 0 1412 2" preserveAspectRatio="none" aria-hidden="true">
+            <path data-hf-id="hf-d6k3" id="f06-principle-path" d="M 0 1 H 1412" />
+          </svg>
+          <div data-hf-id="hf-6a2x" id="f06-principle-text" class="f06-principle-text">evidence before inference</div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+  <script>
+    (function () {
+      var root = document.querySelector('[data-composition-id="06-inspect-system"]');
+      if (!root || typeof gsap === "undefined") return;
+
+      var drawnPaths = Array.prototype.slice.call(
+        root.querySelectorAll(".f06-connector, #f06-principle-path")
+      );
+
+      drawnPaths.forEach(function (path) {
+        var length = path.getTotalLength();
+        path.style.strokeDasharray = String(length);
+        path.style.strokeDashoffset = String(length);
+      });
+
+      var tl = gsap.timeline({ paused: true });
+      window.__timelines = window.__timelines || {};
+      window.__timelines["06-inspect-system"] = tl;
+
+      tl.fromTo(
+        "#f06-boundary",
+        { opacity: 0, y: 16 },
+        { opacity: 1, y: 0, duration: 0.34, ease: "power3.out" },
+        0.12
+      );
+
+      [
+        { id: "#f06-node-1", at: 0.10, x: -40, duration: 0.20 },
+        { id: "#f06-node-2", at: 0.31, x: 40, duration: 0.18 },
+        { id: "#f06-node-3", at: 0.48, x: -40, duration: 0.17 },
+        { id: "#f06-node-4", at: 0.64, x: 40, duration: 0.16 },
+        { id: "#f06-node-5", at: 0.79, x: -40, duration: 0.15 },
+        { id: "#f06-node-6", at: 0.93, x: 40, duration: 0.14 },
+        { id: "#f06-node-7", at: 1.06, x: -40, duration: 0.12 }
+      ].forEach(function (entry) {
+        tl.set(entry.id, { opacity: 1, x: entry.x }, entry.at);
+        tl.to(
+          entry.id,
+          { x: 0, duration: entry.duration, ease: "power4.out" },
+          entry.at
+        );
+      });
+
+      [0.32, 0.50, 0.67, 0.83, 0.97, 1.10].forEach(function (at, index) {
+        tl.to(
+          "#f06-connector-" + (index + 1),
+          { strokeDashoffset: 0, duration: 0.36, ease: "power2.out" },
+          at
+        );
+      });
+
+      tl.fromTo(
+        "#f06-background-orange",
+        { opacity: 0 },
+        { opacity: 1, duration: 0.38, ease: "power1.out" },
+        2.28
+      );
+      tl.to(
+        "#f06-pipeline",
+        { scale: 0.72, opacity: 0, duration: 0.42, ease: "power2.in" },
+        2.30
+      );
+      tl.fromTo(
+        "#f06-orange-stage",
+        { scale: 0.72, opacity: 0 },
+        { scale: 1, opacity: 1, duration: 0.62, ease: "power3.out" },
+        2.55
+      );
+
+      [
+        { id: "#f06-proof-1", at: 3.22 },
+        { id: "#f06-proof-2", at: 3.55 },
+        { id: "#f06-proof-3", at: 3.88 }
+      ].forEach(function (entry) {
+        tl.fromTo(
+          entry.id,
+          { opacity: 0, y: 22 },
+          { opacity: 1, y: 0, duration: 0.42, ease: "power3.out" },
+          entry.at
+        );
+      });
+
+      tl.to(
+        "#f06-brand-row",
+        { x: -390, duration: 0.32, ease: "power3.inOut" },
+        4.80
+      );
+      tl.fromTo(
+        "#f06-repository",
+        { clipPath: "inset(0 100% 0 0)" },
+        { clipPath: "inset(0 0% 0 0)", duration: 0.40, ease: "power3.out" },
+        4.86
+      );
+      tl.to(
+        "#f06-principle-path",
+        { strokeDashoffset: 0, duration: 0.34, ease: "power2.out" },
+        4.94
+      );
+      tl.fromTo(
+        "#f06-principle-text",
+        { clipPath: "inset(0 100% 0 0)" },
+        { clipPath: "inset(0 0% 0 0)", duration: 0.32, ease: "power2.out" },
+        4.98
+      );
+    })();
+  </script>
+</template>

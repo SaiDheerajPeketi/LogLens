@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1920, height=1080">
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js" integrity="sha384-sG0Hv1tP1lZCk9KQmrIbY/XNwi+OY84GQqhMscbnsoBFqAz8KNCil1kvfL3Hbbk2" crossorigin="anonymous"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: #000;
+      }
+      #root {
+        position: relative;
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: #e9eee9;
+      }
+      .scene {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <div data-hf-id="hf-qbnw" id="root" data-composition-id="main" data-start="0" data-duration="60" data-width="1920" data-height="1080">
+      <div data-hf-id="hf-62hq" id="el-01-missing-why" class="scene" data-composition-id="01-missing-why" data-composition-src="compositions/frames/01-missing-why.html" data-start="0" data-duration="6.4" data-track-index="0"></div>
+
+      <div data-hf-id="hf-fx6x" id="el-02-replay-incident" class="scene" data-composition-id="02-replay-incident" data-composition-src="compositions/frames/02-replay-incident.html" data-start="6" data-duration="12.5" data-track-index="1"></div>
+
+      <div data-hf-id="hf-va8l" id="el-03-supported-hypothesis" class="scene" data-composition-id="03-supported-hypothesis" data-composition-src="compositions/frames/03-supported-hypothesis.html" data-start="18" data-duration="14.5" data-track-index="0"></div>
+
+      <div data-hf-id="hf-uma6" id="el-04-evidence-before-inference" class="scene" data-composition-id="04-evidence-before-inference" data-composition-src="compositions/frames/04-evidence-before-inference.html" data-start="32" data-duration="12.4" data-track-index="1"></div>
+
+      <div data-hf-id="hf-uwi8" id="el-05-measured-results" class="scene" data-composition-id="05-measured-results" data-composition-src="compositions/frames/05-measured-results.html" data-start="44" data-duration="8.6" data-track-index="0"></div>
+
+      <div data-hf-id="hf-2g6g" id="el-06-inspect-system" class="scene" data-composition-id="06-inspect-system" data-composition-src="compositions/frames/06-inspect-system.html" data-start="52" data-duration="8" data-track-index="1"></div>
+
+    </div>
+
+    <script>
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = gsap.timeline({ paused: true });
+      // ── frame transitions (injected by transitions.mjs) ──
+      (function () { var tl = window.__timelines["main"];
+        tl.to("#el-01-missing-why", { scale: 2.5, opacity: 0, filter: "blur(8px)", duration: 0.4, ease: "power3.in" }, 6);
+        tl.fromTo("#el-02-replay-incident", { scale: 0.5, opacity: 0, filter: "blur(8px)" }, { scale: 1, opacity: 1, filter: "blur(0px)", duration: 0.4, ease: "power3.out" }, 6);
+        tl.to("#el-02-replay-incident", { x: -1920, duration: 0.5, ease: "power3.inOut" }, 18);
+        tl.fromTo("#el-03-supported-hypothesis", { x: 1920, opacity: 1 }, { x: 0, duration: 0.5, ease: "power3.inOut" }, 18);
+        tl.to("#el-03-supported-hypothesis", { opacity: 0, duration: 0.5, ease: "power2.inOut" }, 32);
+        tl.fromTo("#el-04-evidence-before-inference", { opacity: 0 }, { opacity: 1, duration: 0.5, ease: "power2.inOut" }, 32);
+        tl.to("#el-04-evidence-before-inference", { scale: 2.5, opacity: 0, filter: "blur(8px)", duration: 0.4, ease: "power3.in" }, 44);
+        tl.fromTo("#el-05-measured-results", { scale: 0.5, opacity: 0, filter: "blur(8px)" }, { scale: 1, opacity: 1, filter: "blur(0px)", duration: 0.4, ease: "power3.out" }, 44);
+        tl.to("#el-05-measured-results", { filter: "blur(10px)", scale: 1.03, opacity: 0, duration: 0.6, ease: "power2.inOut" }, 52);
+        tl.fromTo("#el-06-inspect-system", { filter: "blur(10px)", scale: 0.97, opacity: 0 }, { filter: "blur(0px)", scale: 1, opacity: 1, duration: 0.6, ease: "power2.inOut" }, 52);
+        tl.to({}, { duration: 60 }, 0); // full-span anchor — main.duration() == composition total (Studio master duration)
+      })();
+    </script>
+  </body>
+</html>

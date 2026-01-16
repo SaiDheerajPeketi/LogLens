@@ -1,0 +1,541 @@
+<template>
+  <div data-hf-id="hf-32kc" id="root" data-composition-id="02-replay-incident" data-width="1920" data-height="1080" data-duration="12.5">
+    <style>
+      #root {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        container-type: size;
+        color: #071015;
+      }
+
+      [class~="02-replay-incident-ground"] {
+        position: absolute;
+        inset: 0;
+        background: #f1a33c;
+      }
+
+      [class~="02-replay-incident-scene"] {
+        position: absolute;
+        inset: 0;
+        overflow: hidden;
+      }
+
+      [class~="02-replay-incident-console"] {
+        position: absolute;
+        z-index: 10;
+        left: 17.1875cqw;
+        top: 8.2cqh;
+        width: 78.125cqw;
+        height: 74cqh;
+        overflow: hidden;
+        border: 1px solid rgba(7, 16, 21, 0.72);
+        background: #071015;
+        transform-origin: 50% 50%;
+        will-change: transform, filter, opacity;
+        filter: url("#02-replay-incident-streak");
+      }
+
+      [class~="02-replay-incident-world"] {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        overflow: visible;
+        transform-origin: 50% 50%;
+        will-change: transform;
+      }
+
+      [class~="02-replay-incident-surface"] {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 140.8%;
+      }
+
+      [class~="02-replay-incident-slice"] {
+        --dof: 0px;
+        --light: 1;
+        position: absolute;
+        z-index: 1;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: fill;
+        user-select: none;
+        filter: blur(var(--dof)) brightness(var(--light));
+        will-change: filter, opacity;
+      }
+
+      [class~="02-replay-incident-slice-left"] {
+        clip-path: inset(0 82.5% 0 0);
+      }
+
+      [class~="02-replay-incident-slice-center"] {
+        --dof: 4px;
+        --light: 0.62;
+        opacity: 0.54;
+        clip-path: inset(0 24% 0 17.5%);
+      }
+
+      [class~="02-replay-incident-slice-right"] {
+        --dof: 6px;
+        --light: 0.54;
+        opacity: 0.46;
+        clip-path: inset(0 0 0 76%);
+      }
+
+      [class~="02-replay-incident-focus-scrim"] {
+        position: absolute;
+        z-index: 3;
+        left: 17.5%;
+        width: 58.5%;
+        background: rgba(7, 16, 21, 0.76);
+        pointer-events: none;
+      }
+
+      [class~="02-replay-incident-focus-scrim-top"] {
+        top: 0;
+        height: 12.6%;
+      }
+
+      [class~="02-replay-incident-focus-scrim-bottom"] {
+        top: 43.9%;
+        height: 56.1%;
+      }
+
+      [class~="02-replay-incident-source-target"] {
+        position: absolute;
+        z-index: 5;
+        left: 1.1%;
+        top: 22%;
+        width: 15.2%;
+        height: 5.7%;
+        box-sizing: border-box;
+        border: 1px solid #f1a33c;
+        background: rgba(241, 163, 60, 0.08);
+        transform-origin: 50% 50%;
+        will-change: transform, opacity;
+      }
+
+      [class~="02-replay-incident-timeline-focus"] {
+        position: absolute;
+        z-index: 5;
+        left: 18.6%;
+        top: 12.6%;
+        width: 56.3%;
+        height: 31.3%;
+        box-sizing: border-box;
+        border: 1px solid #f1a33c;
+        pointer-events: none;
+        will-change: opacity;
+      }
+
+      [class~="02-replay-incident-locator"] {
+        position: absolute;
+        z-index: 7;
+        left: 50.3%;
+        top: 18.8%;
+        width: 1px;
+        height: 11.8%;
+        background: #f1a33c;
+        transform-origin: 50% 100%;
+        will-change: transform, opacity;
+      }
+
+      [class~="02-replay-incident-cursor"] {
+        position: absolute;
+        z-index: 12;
+        left: 0;
+        top: 0;
+        width: 2.15cqw;
+        height: 3.8cqh;
+        overflow: visible;
+        pointer-events: none;
+        transform-origin: 20% 18%;
+        will-change: transform, opacity;
+      }
+
+      [class~="02-replay-incident-ripple"] {
+        position: absolute;
+        z-index: 11;
+        left: 7%;
+        top: 22.5%;
+        width: 3.2%;
+        aspect-ratio: 1;
+        border: 2px solid #f1a33c;
+        border-radius: 50%;
+        box-sizing: border-box;
+        pointer-events: none;
+        transform-origin: 50% 50%;
+        will-change: transform, opacity;
+      }
+
+      [class~="02-replay-incident-rail"] {
+        position: absolute;
+        z-index: 16;
+        left: 4.3cqw;
+        width: 11.2cqw;
+        padding-top: 0.8cqh;
+        border-top: 1px solid rgba(7, 16, 21, 0.6);
+        color: #071015;
+        font-family: monospace;
+        font-size: 0.72cqw;
+        font-weight: 700;
+        line-height: 1.45;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        will-change: transform, opacity;
+      }
+
+      [class~="02-replay-incident-rail-one"] {
+        top: 12.5cqh;
+      }
+
+      [class~="02-replay-incident-rail-two"] {
+        top: 18.6cqh;
+      }
+
+      [class~="02-replay-incident-band-tag"] {
+        position: absolute;
+        z-index: 18;
+        top: 2.15cqh;
+        color: #071015;
+        font-family: monospace;
+        font-size: 0.72cqw;
+        font-weight: 700;
+        line-height: 1;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        will-change: transform, opacity;
+      }
+
+      [class~="02-replay-incident-tag-source"] {
+        left: 21.5cqw;
+      }
+
+      [class~="02-replay-incident-tag-window"] {
+        left: 50.5cqw;
+      }
+
+      [class~="02-replay-incident-tag-diagnosis"] {
+        left: 81.5cqw;
+      }
+
+      [class~="02-replay-incident-anchor"] {
+        position: absolute;
+        left: 50%;
+        top: 2.15cqh;
+        width: 1px;
+        height: 3.25cqh;
+        background: rgba(7, 16, 21, 0.56);
+      }
+
+      [class~="02-replay-incident-anchor"]::after {
+        content: "";
+        position: absolute;
+        left: -2px;
+        bottom: 0;
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: #071015;
+      }
+
+      [class~="02-replay-incident-statement"] {
+        position: absolute;
+        z-index: 22;
+        left: 4.2cqw;
+        top: 63.2cqh;
+        width: 53cqw;
+        box-sizing: border-box;
+        padding: 1.25cqw 1.55cqw 1.35cqw;
+        border-top: 1px solid rgba(7, 16, 21, 0.72);
+        background: #f1a33c;
+        color: #071015;
+        font-family: sans-serif;
+        font-size: 4.15cqw;
+        font-weight: 900;
+        line-height: 0.91;
+        letter-spacing: -0.04em;
+        text-transform: lowercase;
+        will-change: opacity;
+      }
+
+      [class~="02-replay-incident-statement-line"] {
+        display: block;
+        will-change: transform, opacity;
+      }
+
+      [class~="02-replay-incident-statement-line"] + [class~="02-replay-incident-statement-line"] {
+        margin-top: 0.45cqh;
+      }
+    </style>
+
+    <div data-hf-id="hf-8fd9" class="clip 02-replay-incident-ground" data-start="0" data-duration="12.5" data-track-index="0"></div>
+
+    <div data-hf-id="hf-gjpr" class="clip 02-replay-incident-scene" data-start="0" data-duration="12.5" data-track-index="1">
+      <svg data-hf-id="hf-p3r6" width="0" height="0" aria-hidden="true" style="position: absolute">
+        <filter data-hf-id="hf-c08i" id="02-replay-incident-streak" x="-50%" y="-50%" width="200%" height="200%">
+          <fegaussianblur data-hf-id="hf-gvat" id="02-replay-incident-streak-blur" in="SourceGraphic" stdDeviation="18 18" />
+        </filter>
+      </svg>
+
+      <div data-hf-id="hf-9qg2" id="02-replay-incident-console" class="02-replay-incident-console">
+        <div data-hf-id="hf-geqa" id="02-replay-incident-world" class="02-replay-incident-world">
+          <div data-hf-id="hf-shir" class="02-replay-incident-surface">
+            <img data-hf-id="hf-0smg" id="02-replay-incident-slice-left" class="02-replay-incident-slice 02-replay-incident-slice-left" src="assets/console-desktop.png" alt="LogLens console with incident source, anomaly timeline, transcript, and diagnosis" draggable="false">
+            <img data-hf-id="hf-o8xf" id="02-replay-incident-slice-center" class="02-replay-incident-slice 02-replay-incident-slice-center" src="assets/console-desktop.png" alt="" aria-hidden="true" draggable="false">
+            <img data-hf-id="hf-bvgt" id="02-replay-incident-slice-right" class="02-replay-incident-slice 02-replay-incident-slice-right" src="assets/console-desktop.png" alt="" aria-hidden="true" draggable="false">
+
+            <div data-hf-id="hf-ks3z" id="02-replay-incident-focus-scrim-top" class="02-replay-incident-focus-scrim 02-replay-incident-focus-scrim-top"></div>
+            <div data-hf-id="hf-ffh1" id="02-replay-incident-focus-scrim-bottom" class="02-replay-incident-focus-scrim 02-replay-incident-focus-scrim-bottom"></div>
+            <div data-hf-id="hf-w23q" id="02-replay-incident-source-target" class="02-replay-incident-source-target"></div>
+            <div data-hf-id="hf-k6qq" id="02-replay-incident-timeline-focus" class="02-replay-incident-timeline-focus"></div>
+            <div data-hf-id="hf-yyxu" id="02-replay-incident-locator" class="02-replay-incident-locator"></div>
+
+            <div data-hf-id="hf-3lkg" id="02-replay-incident-ripple-1" class="02-replay-incident-ripple"></div>
+            <div data-hf-id="hf-c9gb" id="02-replay-incident-ripple-2" class="02-replay-incident-ripple"></div>
+            <div data-hf-id="hf-8bca" id="02-replay-incident-ripple-3" class="02-replay-incident-ripple"></div>
+
+            <svg data-hf-id="hf-du8f" id="02-replay-incident-cursor" class="02-replay-incident-cursor" viewBox="0 0 42 48" aria-hidden="true">
+              <path data-hf-id="hf-3sx5" d="M4 3 L4 37 L13 29 L20 45 L28 41 L20 26 L33 25 Z" fill="#f1a33c" stroke="#071015" stroke-width="2.2" stroke-linejoin="miter" />
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <div data-hf-id="hf-dhlg" id="02-replay-incident-rail-one" class="02-replay-incident-rail 02-replay-incident-rail-one">01 / select a source</div>
+      <div data-hf-id="hf-sjhq" id="02-replay-incident-rail-two" class="02-replay-incident-rail 02-replay-incident-rail-two">02 / replay the suspicious window</div>
+
+      <div data-hf-id="hf-9pab" id="02-replay-incident-tag-source" class="02-replay-incident-band-tag 02-replay-incident-tag-source">
+        source
+        <span data-hf-id="hf-nv6r" class="02-replay-incident-anchor" aria-hidden="true"></span>
+      </div>
+      <div data-hf-id="hf-07m0" id="02-replay-incident-tag-window" class="02-replay-incident-band-tag 02-replay-incident-tag-window">
+        window
+        <span data-hf-id="hf-qlyb" class="02-replay-incident-anchor" aria-hidden="true"></span>
+      </div>
+      <div data-hf-id="hf-xuqj" id="02-replay-incident-tag-diagnosis" class="02-replay-incident-band-tag 02-replay-incident-tag-diagnosis">
+        diagnosis
+        <span data-hf-id="hf-q7na" class="02-replay-incident-anchor" aria-hidden="true"></span>
+      </div>
+
+      <div data-hf-id="hf-9yim" id="02-replay-incident-statement" class="02-replay-incident-statement">
+        <span data-hf-id="hf-0ehp" id="02-replay-incident-statement-one" class="02-replay-incident-statement-line">replay the failure.</span>
+        <span data-hf-id="hf-7lwp" id="02-replay-incident-statement-two" class="02-replay-incident-statement-line">inspect the evidence.</span>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      (() => {
+        const consoleShell = document.getElementById("02-replay-incident-console");
+        const world = document.getElementById("02-replay-incident-world");
+        const blurNode = document.getElementById("02-replay-incident-streak-blur");
+        const leftSlice = document.getElementById("02-replay-incident-slice-left");
+        const centerSlice = document.getElementById("02-replay-incident-slice-center");
+        const rightSlice = document.getElementById("02-replay-incident-slice-right");
+        const scrimTop = document.getElementById("02-replay-incident-focus-scrim-top");
+        const scrimBottom = document.getElementById("02-replay-incident-focus-scrim-bottom");
+        const sourceTarget = document.getElementById("02-replay-incident-source-target");
+        const timelineFocus = document.getElementById("02-replay-incident-timeline-focus");
+        const locator = document.getElementById("02-replay-incident-locator");
+        const cursor = document.getElementById("02-replay-incident-cursor");
+        const railOne = document.getElementById("02-replay-incident-rail-one");
+        const railTwo = document.getElementById("02-replay-incident-rail-two");
+        const tagSource = document.getElementById("02-replay-incident-tag-source");
+        const tagWindow = document.getElementById("02-replay-incident-tag-window");
+        const tagDiagnosis = document.getElementById("02-replay-incident-tag-diagnosis");
+        const statement = document.getElementById("02-replay-incident-statement");
+        const statementOne = document.getElementById("02-replay-incident-statement-one");
+        const statementTwo = document.getElementById("02-replay-incident-statement-two");
+        const rings = [
+          document.getElementById("02-replay-incident-ripple-1"),
+          document.getElementById("02-replay-incident-ripple-2"),
+          document.getElementById("02-replay-incident-ripple-3"),
+        ];
+
+        const cam = { scale: 1, x: 0, y: 0 };
+        const applyCamera = () => {
+          world.style.transform = `translate(${cam.x}px, ${cam.y}px) scale(${cam.scale})`;
+        };
+        applyCamera();
+
+        const blurProxy = { v: 18 };
+        const writeBlur = () => {
+          blurNode.setAttribute("stdDeviation", `${blurProxy.v} ${blurProxy.v}`);
+        };
+        writeBlur();
+
+        const tl = gsap.timeline({ paused: true });
+        window.__timelines = window.__timelines || {};
+        window.__timelines["02-replay-incident"] = tl;
+
+        tl.set(rings, { scale: 0, opacity: 0 }, 0);
+
+        tl.fromTo(
+          consoleShell,
+          { scale: 1.28, opacity: 0 },
+          { scale: 1, opacity: 1, duration: 0.58, ease: "power4.out" },
+          0.2,
+        );
+        tl.to(
+          blurProxy,
+          { v: 0, duration: 0.58, ease: "power4.out", onUpdate: writeBlur },
+          0.2,
+        );
+        tl.fromTo(
+          railOne,
+          { x: -28, opacity: 0 },
+          { x: 0, opacity: 1, duration: 0.42, ease: "power3.out" },
+          0.72,
+        );
+        tl.fromTo(
+          sourceTarget,
+          { opacity: 0 },
+          { opacity: 1, duration: 0.35, ease: "power2.out" },
+          1.08,
+        );
+        tl.fromTo(
+          cursor,
+          { x: 34, y: 112, opacity: 0 },
+          { x: 130, y: 278, opacity: 1, duration: 0.9, ease: "power2.inOut" },
+          1.0,
+        );
+
+        tl.to(cursor, { scale: 0.84, duration: 0.08, ease: "power2.in" }, 2.0);
+        tl.to(sourceTarget, { scale: 0.96, duration: 0.08, ease: "power2.in" }, 2.0);
+        tl.to(cursor, { scale: 1, duration: 0.1, ease: "power2.out" }, 2.08);
+        tl.to(sourceTarget, { scale: 1, duration: 0.1, ease: "power2.out" }, 2.08);
+
+        rings.forEach((ring, index) => {
+          const at = 2.03 + index * 0.08;
+          tl.set(ring, { scale: 0, opacity: 0.82 - index * 0.16 }, at);
+          tl.to(
+            ring,
+            { scale: 4, opacity: 0, duration: 0.68, ease: "power3.out", immediateRender: false },
+            at,
+          );
+        });
+
+        tl.to(
+          cam,
+          {
+            scale: 1.28,
+            x: 55,
+            y: 100,
+            duration: 1.3,
+            ease: "power3.inOut",
+            onUpdate: applyCamera,
+          },
+          3.2,
+        );
+        tl.to(
+          leftSlice,
+          { "--dof": "6px", "--light": 0.54, opacity: 0.5, duration: 1.3, ease: "power2.inOut" },
+          3.2,
+        );
+        tl.to(
+          centerSlice,
+          { "--dof": "0px", "--light": 1, opacity: 1, duration: 1.3, ease: "power2.inOut" },
+          3.2,
+        );
+        tl.to(
+          rightSlice,
+          { "--dof": "8px", "--light": 0.48, opacity: 0.42, duration: 1.3, ease: "power2.inOut" },
+          3.2,
+        );
+        tl.to(sourceTarget, { opacity: 0.24, duration: 0.65, ease: "power2.inOut" }, 3.2);
+        tl.fromTo(
+          [scrimTop, scrimBottom],
+          { opacity: 0 },
+          { opacity: 1, duration: 0.7, ease: "power2.inOut" },
+          3.45,
+        );
+        tl.fromTo(
+          timelineFocus,
+          { opacity: 0 },
+          { opacity: 1, duration: 0.55, ease: "power2.out" },
+          3.55,
+        );
+
+        tl.to(cursor, { x: 620, y: 252, duration: 0.38, ease: "power3.out" }, 4.62);
+        tl.to(cursor, { x: 760, y: 250, duration: 1, ease: "power2.inOut" }, 5.0);
+        tl.fromTo(
+          locator,
+          { scaleY: 0, opacity: 0 },
+          { scaleY: 1, opacity: 1, duration: 0.46, ease: "power3.out" },
+          5.25,
+        );
+        tl.fromTo(
+          railTwo,
+          { x: -28, opacity: 0 },
+          { x: 0, opacity: 1, duration: 0.42, ease: "power3.out" },
+          5.78,
+        );
+
+        tl.to(
+          cam,
+          {
+            scale: 1,
+            x: 0,
+            y: 0,
+            duration: 1.05,
+            ease: "power3.inOut",
+            onUpdate: applyCamera,
+          },
+          7.6,
+        );
+        tl.to(
+          [leftSlice, centerSlice, rightSlice],
+          { "--dof": "0px", "--light": 1, opacity: 1, duration: 1.05, ease: "power2.inOut" },
+          7.6,
+        );
+        tl.to([scrimTop, scrimBottom], { opacity: 0, duration: 0.72, ease: "power2.inOut" }, 7.6);
+        tl.to(timelineFocus, { opacity: 0.24, duration: 0.72, ease: "power2.inOut" }, 7.6);
+        tl.to(sourceTarget, { opacity: 0.24, duration: 0.72, ease: "power2.inOut" }, 7.6);
+
+        tl.fromTo(
+          tagSource,
+          { y: -18, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.44, ease: "power3.out" },
+          7.95,
+        );
+        tl.fromTo(
+          tagWindow,
+          { y: -18, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.44, ease: "power3.out" },
+          8.4,
+        );
+        tl.fromTo(
+          tagDiagnosis,
+          { y: -18, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.44, ease: "power3.out" },
+          8.85,
+        );
+
+        tl.fromTo(
+          statement,
+          { opacity: 0 },
+          { opacity: 1, duration: 0.22, ease: "power2.out" },
+          9.86,
+        );
+        tl.fromTo(
+          statementOne,
+          { y: 42, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.58, ease: "power4.out" },
+          10.0,
+        );
+        tl.fromTo(
+          statementTwo,
+          { y: 42, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.62, ease: "power4.out" },
+          10.45,
+        );
+      })();
+    </script>
+  </div>
+</template>

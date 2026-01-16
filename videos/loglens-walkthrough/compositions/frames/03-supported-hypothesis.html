@@ -1,0 +1,533 @@
+<template>
+  <style>
+    #root {
+      position: relative;
+      width: 1920px;
+      height: 1080px;
+      overflow: hidden;
+      container-type: size;
+      color: #e9eee9;
+    }
+
+    [class~="03-supported-hypothesis-background"] {
+      position: absolute;
+      inset: 0;
+      background: #071015;
+    }
+
+    [class~="03-supported-hypothesis-scene"] {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+    }
+
+    [class~="03-supported-hypothesis-hairline"] {
+      position: absolute;
+      background: #282726;
+      transform-origin: top center;
+    }
+
+    [id="03-supported-hypothesis-divider"] {
+      left: 720px;
+      top: 78px;
+      width: 1px;
+      height: 760px;
+    }
+
+    [id="03-supported-hypothesis-timeline"] {
+      position: absolute;
+      left: 90px;
+      top: 92px;
+      width: 1740px;
+      height: 570px;
+      overflow: hidden;
+      transform-origin: 0 0;
+      will-change: transform, opacity;
+    }
+
+    [id="03-supported-hypothesis-timeline"]::before,
+    [id="03-supported-hypothesis-timeline"]::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: #282726;
+      z-index: 4;
+    }
+
+    [id="03-supported-hypothesis-timeline"]::before {
+      top: 0;
+    }
+
+    [id="03-supported-hypothesis-timeline"]::after {
+      bottom: 0;
+    }
+
+    [id="03-supported-hypothesis-timeline-image"] {
+      position: absolute;
+      left: -573px;
+      top: -291px;
+      width: 3082px;
+      height: auto;
+      max-width: none;
+      user-select: none;
+    }
+
+    [id="03-supported-hypothesis-marker"] {
+      position: absolute;
+      left: 790px;
+      top: 104px;
+      width: 330px;
+      height: 255px;
+      border: 8px solid #f1a33c;
+      border-radius: 50%;
+      transform-origin: 50% 50%;
+      z-index: 5;
+    }
+
+    [id="03-supported-hypothesis-selected-label"] {
+      position: absolute;
+      left: 90px;
+      top: 700px;
+      color: #f1a33c;
+      font-family: monospace;
+      font-size: 18px;
+      font-weight: 500;
+      line-height: 1.2;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      white-space: nowrap;
+      will-change: transform, opacity;
+    }
+
+    [id="03-supported-hypothesis-selected-rule"] {
+      position: absolute;
+      left: 90px;
+      top: 744px;
+      width: 36px;
+      height: 2px;
+      background: #f1a33c;
+      transform-origin: left center;
+    }
+
+    [id="03-supported-hypothesis-diagnosis-stage"] {
+      position: absolute;
+      left: 760px;
+      top: 98px;
+      width: 1060px;
+      height: 690px;
+    }
+
+    [id="03-supported-hypothesis-probable"] {
+      position: absolute;
+      left: 0;
+      top: 60px;
+      color: #f1a33c;
+      font-family: monospace;
+      font-size: 18px;
+      font-weight: 500;
+      line-height: 1.2;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    [id="03-supported-hypothesis-cause"] {
+      position: absolute;
+      left: 0;
+      top: 98px;
+      width: 580px;
+      color: #e9eee9;
+      font-size: 88px;
+      font-weight: 900;
+      line-height: 0.88;
+      letter-spacing: -0.04em;
+      text-transform: lowercase;
+      transform-origin: left center;
+    }
+
+    [class~="03-supported-hypothesis-real-crop"] {
+      position: absolute;
+      right: 0;
+      top: 0;
+      width: 470px;
+      height: 640px;
+      overflow: hidden;
+      border-left: 1px solid #282726;
+      border-bottom: 1px solid #282726;
+      background: #071015;
+      transform-origin: 50% 50%;
+    }
+
+    [class~="03-supported-hypothesis-real-crop"] img {
+      position: absolute;
+      left: -1747px;
+      width: 2304px;
+      height: 1728px;
+      max-width: none;
+      user-select: none;
+    }
+
+    [id="03-supported-hypothesis-diagnosis-image"] {
+      top: -218px;
+    }
+
+    [id="03-supported-hypothesis-evidence-crop"] {
+      z-index: 3;
+    }
+
+    [id="03-supported-hypothesis-evidence-image"] {
+      top: -742px;
+    }
+
+    [id="03-supported-hypothesis-metric"] {
+      position: absolute;
+      left: 0;
+      top: 302px;
+      width: 560px;
+      height: 352px;
+      perspective: 900px;
+    }
+
+    [id="03-supported-hypothesis-counter-wrap"] {
+      position: absolute;
+      left: 0;
+      top: 0;
+      display: flex;
+      align-items: baseline;
+      width: 540px;
+      height: 230px;
+      color: #f1a33c;
+      font-variant-numeric: tabular-nums;
+      transform-style: preserve-3d;
+      transform-origin: left center;
+    }
+
+    [id="03-supported-hypothesis-counter"] {
+      display: inline-block;
+      min-width: 345px;
+      font-size: 240px;
+      font-weight: 900;
+      line-height: 0.9;
+      letter-spacing: -0.05em;
+      font-variant-numeric: tabular-nums;
+      transform-origin: left center;
+      transform-style: preserve-3d;
+    }
+
+    [id="03-supported-hypothesis-suffix"] {
+      display: inline-block;
+      margin-left: 12px;
+      color: #f1a33c;
+      font-size: 92px;
+      font-weight: 900;
+      line-height: 1;
+      transform-origin: left bottom;
+    }
+
+    [id="03-supported-hypothesis-confidence-track"] {
+      position: absolute;
+      left: 0;
+      top: 230px;
+      width: 540px;
+      height: 12px;
+      overflow: hidden;
+      background: #282726;
+    }
+
+    [id="03-supported-hypothesis-confidence-fill"] {
+      width: 100%;
+      height: 100%;
+      background: #f1a33c;
+      transform-origin: left center;
+    }
+
+    [id="03-supported-hypothesis-confidence-label"] {
+      position: absolute;
+      left: 0;
+      top: 268px;
+      display: flex;
+      align-items: baseline;
+      color: #e9eee9;
+      font-size: 42px;
+      font-weight: 700;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      text-transform: lowercase;
+      white-space: nowrap;
+    }
+
+    [class~="03-supported-hypothesis-character"] {
+      display: inline-block;
+      min-width: 0.24em;
+    }
+
+    [class~="03-supported-hypothesis-character-space"] {
+      width: 0.34em;
+      min-width: 0.34em;
+    }
+
+    [id="03-supported-hypothesis-caveat"] {
+      position: absolute;
+      left: 760px;
+      top: 760px;
+      display: flex;
+      align-items: baseline;
+      gap: 16px;
+      color: #e9eee9;
+      font-size: 50px;
+      font-weight: 700;
+      line-height: 1.1;
+      letter-spacing: -0.025em;
+      text-transform: lowercase;
+      white-space: nowrap;
+    }
+
+    [class~="03-supported-hypothesis-caveat-word"] {
+      display: inline-block;
+    }
+
+    [id="03-supported-hypothesis-caveat"]::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: -28px;
+      width: 36px;
+      height: 2px;
+      background: #f1a33c;
+    }
+  </style>
+
+  <section data-hf-id="hf-5644" id="root" data-composition-id="03-supported-hypothesis" data-width="1920" data-height="1080" data-duration="14.5">
+    <div data-hf-id="hf-0cw1" class="clip 03-supported-hypothesis-background" data-start="0" data-duration="14.5" data-track-index="0" aria-hidden="true"></div>
+
+    <div data-hf-id="hf-dipd" class="clip 03-supported-hypothesis-scene" data-start="0" data-duration="14.5" data-track-index="1">
+      <div data-hf-id="hf-sd26" id="03-supported-hypothesis-timeline">
+        <img data-hf-id="hf-0fzq" id="03-supported-hypothesis-timeline-image" src="assets/console-desktop.png" alt="LogLens anomaly timeline with the selected peak">
+        <div data-hf-id="hf-mbhe" id="03-supported-hypothesis-marker" aria-hidden="true"></div>
+      </div>
+
+      <div data-hf-id="hf-msok" id="03-supported-hypothesis-selected-label">
+        selected anomaly / 00:02:10–00:02:15
+      </div>
+      <div data-hf-id="hf-j0wq" id="03-supported-hypothesis-selected-rule" aria-hidden="true"></div>
+
+      <div data-hf-id="hf-cfrw" id="03-supported-hypothesis-divider" class="03-supported-hypothesis-hairline" aria-hidden="true"></div>
+
+      <div data-hf-id="hf-0bhz" id="03-supported-hypothesis-diagnosis-stage">
+        <div data-hf-id="hf-jvp2" id="03-supported-hypothesis-cause">database timeout</div>
+        <div data-hf-id="hf-jife" id="03-supported-hypothesis-probable">probable cause</div>
+
+        <div data-hf-id="hf-6f5v" id="03-supported-hypothesis-diagnosis-crop" class="03-supported-hypothesis-real-crop">
+          <img data-hf-id="hf-ictx" id="03-supported-hypothesis-diagnosis-image" src="assets/console-desktop.png" alt="Captured LogLens diagnosis showing database timeout and classifier confidence">
+        </div>
+
+        <div data-hf-id="hf-z5s9" id="03-supported-hypothesis-evidence-crop" class="03-supported-hypothesis-real-crop">
+          <img data-hf-id="hf-jjya" id="03-supported-hypothesis-evidence-image" src="assets/console-desktop.png" alt="Captured LogLens evidence summary with five cited lines">
+        </div>
+
+        <div data-hf-id="hf-7l8n" id="03-supported-hypothesis-metric">
+          <div data-hf-id="hf-j6nq" id="03-supported-hypothesis-counter-wrap">
+            <span data-hf-id="hf-af04" id="03-supported-hypothesis-counter">0</span>
+            <span data-hf-id="hf-976y" id="03-supported-hypothesis-suffix">%</span>
+          </div>
+          <div data-hf-id="hf-5c7q" id="03-supported-hypothesis-confidence-track" aria-hidden="true">
+            <div data-hf-id="hf-y0xv" id="03-supported-hypothesis-confidence-fill"></div>
+          </div>
+          <div data-hf-id="hf-5xku" id="03-supported-hypothesis-confidence-label" aria-label="classifier confidence"></div>
+        </div>
+      </div>
+
+      <div data-hf-id="hf-iwab" id="03-supported-hypothesis-caveat">
+        <span data-hf-id="hf-9c5j" class="03-supported-hypothesis-caveat-word">a</span>
+        <span data-hf-id="hf-apx2" class="03-supported-hypothesis-caveat-word">hypothesis,</span>
+        <span data-hf-id="hf-m3ul" class="03-supported-hypothesis-caveat-word">not</span>
+        <span data-hf-id="hf-rfmv" class="03-supported-hypothesis-caveat-word">a</span>
+        <span data-hf-id="hf-y67d" class="03-supported-hypothesis-caveat-word">verdict.</span>
+      </div>
+    </div>
+  </section>
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+  <script>
+    (() => {
+      const byId = (suffix) => document.getElementById(`03-supported-hypothesis-${suffix}`);
+      const timeline = byId("timeline");
+      const marker = byId("marker");
+      const selectedLabel = byId("selected-label");
+      const selectedRule = byId("selected-rule");
+      const divider = byId("divider");
+      const diagnosisCrop = byId("diagnosis-crop");
+      const evidenceCrop = byId("evidence-crop");
+      const cause = byId("cause");
+      const probable = byId("probable");
+      const metric = byId("metric");
+      const counterWrap = byId("counter-wrap");
+      const counter = byId("counter");
+      const suffix = byId("suffix");
+      const fill = byId("confidence-fill");
+      const confidenceLabel = byId("confidence-label");
+      const caveatWords = document.querySelectorAll(
+        '[class~="03-supported-hypothesis-caveat-word"]',
+      );
+
+      for (const character of "classifier confidence") {
+        const span = document.createElement("span");
+        span.className =
+          character === " "
+            ? "03-supported-hypothesis-character 03-supported-hypothesis-character-space"
+            : "03-supported-hypothesis-character";
+        span.textContent = character === " " ? "\u00a0" : character;
+        confidenceLabel.appendChild(span);
+      }
+
+      const confidenceCharacters = confidenceLabel.querySelectorAll(
+        '[class~="03-supported-hypothesis-character"]',
+      );
+      const counterState = { value: 0 };
+      const tl = gsap.timeline({ paused: true });
+
+      window.__timelines = window.__timelines || {};
+      window.__timelines["03-supported-hypothesis"] = tl;
+
+      tl.fromTo(
+        timeline,
+        { x: 120, opacity: 0.72 },
+        { x: 0, opacity: 1, duration: 0.65, ease: "power3.out" },
+        0,
+      );
+      tl.fromTo(
+        selectedLabel,
+        { y: 18, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.55, ease: "power3.out" },
+        1.0,
+      );
+      tl.fromTo(
+        selectedRule,
+        { scaleX: 0 },
+        { scaleX: 1, duration: 0.45, ease: "power2.out" },
+        1.3,
+      );
+      tl.fromTo(
+        marker,
+        { scale: 0.72, rotation: -4, opacity: 0 },
+        { scale: 1, rotation: -3, opacity: 1, duration: 0.6, ease: "back.out(1.7)" },
+        2.1,
+      );
+
+      tl.to(
+        timeline,
+        { x: 0, y: 45, scale: 0.36, opacity: 0.48, duration: 0.5, ease: "power2.in" },
+        3.4,
+      );
+      tl.to(
+        selectedLabel,
+        { y: -262, duration: 0.55, ease: "power3.inOut" },
+        3.4,
+      );
+      tl.to(
+        selectedRule,
+        { y: -262, duration: 0.55, ease: "power3.inOut" },
+        3.4,
+      );
+      tl.fromTo(
+        diagnosisCrop,
+        { scale: 0.72, opacity: 0 },
+        { scale: 1, opacity: 1, duration: 0.65, ease: "back.out(1.4)" },
+        3.75,
+      );
+      tl.fromTo(
+        divider,
+        { scaleY: 0, opacity: 0 },
+        { scaleY: 1, opacity: 1, duration: 0.65, ease: "power3.out" },
+        3.9,
+      );
+      tl.fromTo(
+        cause,
+        { y: 34, opacity: 0, scale: 0.8 },
+        { y: 0, opacity: 1, scale: 1, duration: 0.62, ease: "back.out(1.45)" },
+        4.15,
+      );
+      tl.fromTo(
+        probable,
+        { y: 18, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.5, ease: "power3.out" },
+        4.85,
+      );
+
+      tl.fromTo(
+        metric,
+        { opacity: 0 },
+        { opacity: 1, duration: 0.25, ease: "power2.out" },
+        7.4,
+      );
+      tl.to(
+        diagnosisCrop,
+        { opacity: 0.18, scale: 0.96, duration: 0.45, ease: "power2.in" },
+        7.4,
+      );
+      tl.fromTo(
+        evidenceCrop,
+        { scale: 0.78, opacity: 0 },
+        { scale: 1, opacity: 1, duration: 0.7, ease: "back.out(1.4)" },
+        8.05,
+      );
+      tl.to(
+        counterState,
+        {
+          value: 98,
+          duration: 1.6,
+          ease: "power3.out",
+          onUpdate: () => {
+            counter.textContent = Math.round(counterState.value).toLocaleString();
+          },
+        },
+        7.4,
+      );
+      tl.fromTo(
+        counterWrap,
+        { scale: 0.5, z: -240, opacity: 0 },
+        { scale: 1, z: 0, opacity: 1, duration: 1.6, ease: "power3.out" },
+        7.4,
+      );
+      tl.fromTo(
+        fill,
+        { scaleX: 0 },
+        { scaleX: 0.98, duration: 1.6, ease: "power3.out" },
+        7.4,
+      );
+      tl.fromTo(
+        confidenceCharacters,
+        { y: 16, opacity: 0 },
+        {
+          y: 0,
+          opacity: 1,
+          duration: 0.24,
+          ease: "power2.out",
+          stagger: 0.045,
+        },
+        7.85,
+      );
+      tl.fromTo(
+        suffix,
+        { y: 24, scale: 0.7, opacity: 0 },
+        { y: 0, scale: 1, opacity: 1, duration: 0.35, ease: "back.out(1.6)" },
+        9.0,
+      );
+
+      tl.fromTo(
+        caveatWords,
+        { y: 20, opacity: 0 },
+        {
+          y: 0,
+          opacity: 1,
+          duration: 0.34,
+          ease: "power3.out",
+          stagger: 0.12,
+        },
+        11.2,
+      );
+    })();
+  </script>
+</template>

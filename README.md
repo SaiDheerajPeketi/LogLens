@@ -149,7 +149,9 @@ The repository verifies:
 
 ## Walkthrough
 
-The 60-second H.264 walkthrough and poster are the final packaged deliverable. They are added under `video/` after the application and documentation pass their final clean-checkout audit.
+[![LogLens walkthrough poster](video/loglens-walkthrough-poster.png)](video/loglens-walkthrough.mp4)
+
+[Watch the 60-second walkthrough](video/loglens-walkthrough.mp4). The committed deliverable is a silent 1920×1080 H.264 MP4 at 30 fps. It uses real product captures and measured results, and it ends by stating that public hosting is deferred.
 
 ## Cloud readiness
 

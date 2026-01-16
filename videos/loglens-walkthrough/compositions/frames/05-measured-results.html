@@ -1,0 +1,405 @@
+<template>
+  <style>
+    #root {
+      position: relative;
+      width: 1920px;
+      height: 1080px;
+      overflow: hidden;
+      container-type: size;
+      color: #e9eee9;
+    }
+
+    [class~="05-measured-results-background"] {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      background: #071015;
+    }
+
+    [id="05-measured-results-evaluation"] {
+      position: absolute;
+      inset: 0;
+      width: 1920px;
+      height: 1080px;
+      max-width: none;
+      object-fit: cover;
+      object-position: center top;
+      user-select: none;
+      will-change: opacity, filter;
+    }
+
+    [id="05-measured-results-split-focus"] {
+      position: absolute;
+      left: 0;
+      top: 720px;
+      width: 1920px;
+      height: 176px;
+      overflow: hidden;
+      border-top: 1px solid #282726;
+      border-bottom: 1px solid #282726;
+      will-change: opacity, filter, clip-path;
+    }
+
+    [id="05-measured-results-split-focus-image"] {
+      position: absolute;
+      left: 0;
+      top: -720px;
+      width: 1920px;
+      height: 1080px;
+      max-width: none;
+      object-fit: cover;
+      object-position: center top;
+      user-select: none;
+    }
+
+    [class~="05-measured-results-scene"] {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+    }
+
+    [id="05-measured-results-heading-mask"] {
+      position: absolute;
+      left: 106px;
+      top: 78px;
+      width: 1340px;
+      height: 90px;
+      overflow: hidden;
+    }
+
+    [id="05-measured-results-heading"] {
+      display: block;
+      width: max-content;
+      color: #e9eee9;
+      font-size: 72px;
+      font-weight: 900;
+      line-height: 0.96;
+      letter-spacing: -0.04em;
+      text-transform: lowercase;
+      transform-origin: left center;
+      will-change: transform, clip-path;
+    }
+
+    [id="05-measured-results-tag"] {
+      position: absolute;
+      left: 106px;
+      top: 190px;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      color: #f1a33c;
+      font-family: monospace;
+      font-size: 18px;
+      font-weight: 500;
+      line-height: 1.2;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      white-space: nowrap;
+      will-change: transform, opacity;
+    }
+
+    [id="05-measured-results-tag"]::before {
+      content: "";
+      width: 36px;
+      height: 2px;
+      flex: 0 0 auto;
+      background: #f1a33c;
+    }
+
+    [id="05-measured-results-stats"] {
+      position: absolute;
+      left: 106px;
+      top: 302px;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 24px;
+      width: 1708px;
+      height: 350px;
+    }
+
+    [class~="05-measured-results-stat"] {
+      position: relative;
+      height: 350px;
+      overflow: hidden;
+      border-top: 1px solid #282726;
+      opacity: 0;
+      transform-origin: center top;
+      will-change: transform, opacity;
+    }
+
+    [class~="05-measured-results-dataset"] {
+      position: absolute;
+      left: 0;
+      top: 24px;
+      color: #e9eee9;
+      font-family: monospace;
+      font-size: 16px;
+      font-weight: 500;
+      line-height: 1.2;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    [class~="05-measured-results-value"] {
+      position: absolute;
+      left: 0;
+      top: 76px;
+      display: inline-block;
+      width: 100%;
+      color: #f1a33c;
+      font-size: 98px;
+      font-weight: 900;
+      font-variant-numeric: tabular-nums;
+      line-height: 0.92;
+      letter-spacing: -0.055em;
+      white-space: nowrap;
+      transform-origin: left center;
+      will-change: transform;
+    }
+
+    [class~="05-measured-results-metric"] {
+      position: absolute;
+      left: 0;
+      top: 190px;
+      width: 100%;
+      color: #e9eee9;
+      font-size: 26px;
+      font-weight: 700;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      text-transform: lowercase;
+    }
+
+    [class~="05-measured-results-track"] {
+      position: absolute;
+      left: 0;
+      top: 248px;
+      width: 100%;
+      height: 8px;
+      overflow: hidden;
+      background: #282726;
+    }
+
+    [class~="05-measured-results-fill"] {
+      width: 100%;
+      height: 100%;
+      background: #f1a33c;
+      transform-origin: left center;
+      will-change: transform;
+    }
+
+    [id="05-measured-results-claim"] {
+      position: absolute;
+      left: 106px;
+      top: 700px;
+      display: flex;
+      align-items: center;
+      gap: 22px;
+      color: #e9eee9;
+      font-size: 58px;
+      font-weight: 900;
+      line-height: 0.96;
+      letter-spacing: -0.035em;
+      text-transform: lowercase;
+      white-space: nowrap;
+      will-change: transform, opacity;
+    }
+
+    [id="05-measured-results-claim"]::before {
+      content: "";
+      width: 36px;
+      height: 2px;
+      flex: 0 0 auto;
+      background: #f1a33c;
+    }
+
+    [id="05-measured-results-claim-bound"] {
+      color: #f1a33c;
+    }
+  </style>
+
+  <section data-hf-id="hf-u5ju" id="root" data-composition-id="05-measured-results" data-width="1920" data-height="1080" data-duration="8.6">
+    <div data-hf-id="hf-5s4e" class="clip 05-measured-results-background" data-start="0" data-duration="8.6" data-track-index="0">
+      <img data-hf-id="hf-6sr9" id="05-measured-results-evaluation" src="assets/evaluation.png" alt="" aria-hidden="true">
+      <div data-hf-id="hf-tzy1" id="05-measured-results-split-focus" aria-hidden="true">
+        <img data-hf-id="hf-erex" id="05-measured-results-split-focus-image" src="assets/evaluation.png" alt="">
+      </div>
+    </div>
+
+    <div data-hf-id="hf-7tan" class="clip 05-measured-results-scene" data-start="0" data-duration="8.6" data-track-index="1">
+      <div data-hf-id="hf-2aem" id="05-measured-results-heading-mask">
+        <span data-hf-id="hf-p6gb" id="05-measured-results-heading">measured on held-out data</span>
+      </div>
+
+      <div data-hf-id="hf-ff2m" id="05-measured-results-tag">evaluation / test splits untouched</div>
+
+      <div data-hf-id="hf-s1ny" id="05-measured-results-stats">
+        <article data-hf-id="hf-6q8t" class="05-measured-results-stat" id="05-measured-results-stat-1">
+          <div data-hf-id="hf-pvxs" class="05-measured-results-dataset">HDFS / held-out</div>
+          <span data-hf-id="hf-igad" class="05-measured-results-value" id="05-measured-results-value-1">0.0000</span>
+          <div data-hf-id="hf-a4tc" class="05-measured-results-metric">PR-AUC</div>
+          <div data-hf-id="hf-pw6m" class="05-measured-results-track" aria-hidden="true">
+            <div data-hf-id="hf-lmrk" class="05-measured-results-fill" id="05-measured-results-fill-1"></div>
+          </div>
+        </article>
+
+        <article data-hf-id="hf-aocu" class="05-measured-results-stat" id="05-measured-results-stat-2">
+          <div data-hf-id="hf-l9s8" class="05-measured-results-dataset">HDFS / held-out</div>
+          <span data-hf-id="hf-eo76" class="05-measured-results-value" id="05-measured-results-value-2">0.0000</span>
+          <div data-hf-id="hf-jmxp" class="05-measured-results-metric">F1</div>
+          <div data-hf-id="hf-hdma" class="05-measured-results-track" aria-hidden="true">
+            <div data-hf-id="hf-wi97" class="05-measured-results-fill" id="05-measured-results-fill-2"></div>
+          </div>
+        </article>
+
+        <article data-hf-id="hf-emgv" class="05-measured-results-stat" id="05-measured-results-stat-3">
+          <div data-hf-id="hf-k2v5" class="05-measured-results-dataset">HDFS / held-out</div>
+          <span data-hf-id="hf-wyp3" class="05-measured-results-value" id="05-measured-results-value-3">0.0000</span>
+          <div data-hf-id="hf-60q5" class="05-measured-results-metric">false-positive rate</div>
+          <div data-hf-id="hf-hrxb" class="05-measured-results-track" aria-hidden="true">
+            <div data-hf-id="hf-sk56" class="05-measured-results-fill" id="05-measured-results-fill-3"></div>
+          </div>
+        </article>
+
+        <article data-hf-id="hf-ikkw" class="05-measured-results-stat" id="05-measured-results-stat-4">
+          <div data-hf-id="hf-4fxu" class="05-measured-results-dataset">synthetic RCA / held-out</div>
+          <span data-hf-id="hf-nnkk" class="05-measured-results-value" id="05-measured-results-value-4">0.0000</span>
+          <div data-hf-id="hf-n4um" class="05-measured-results-metric">macro-F1</div>
+          <div data-hf-id="hf-i68c" class="05-measured-results-track" aria-hidden="true">
+            <div data-hf-id="hf-9sfh" class="05-measured-results-fill" id="05-measured-results-fill-4"></div>
+          </div>
+        </article>
+      </div>
+
+      <div data-hf-id="hf-mr7v" id="05-measured-results-claim">
+        <span data-hf-id="hf-uo4g">strong benchmarks.</span>
+        <span data-hf-id="hf-tmsz" id="05-measured-results-claim-bound">bounded claims.</span>
+      </div>
+    </div>
+  </section>
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+  <script>
+    (() => {
+      const byId = (suffix) => document.getElementById(`05-measured-results-${suffix}`);
+      const evaluation = byId("evaluation");
+      const splitFocus = byId("split-focus");
+      const heading = byId("heading");
+      const tag = byId("tag");
+      const claim = byId("claim");
+      const stats = [1, 2, 3, 4].map((index) => byId(`stat-${index}`));
+      const values = [1, 2, 3, 4].map((index) => byId(`value-${index}`));
+      const fills = [1, 2, 3, 4].map((index) => byId(`fill-${index}`));
+      const states = [
+        { value: 0 },
+        { value: 0 },
+        { value: 0 },
+        { value: 0 },
+      ];
+      const targets = [9994, 9956, 2, 10000];
+      const proportions = [0.9994, 0.9956, 0.0002, 1];
+      const tl = gsap.timeline({ paused: true });
+
+      window.__timelines = window.__timelines || {};
+      window.__timelines["05-measured-results"] = tl;
+
+      tl.fromTo(
+        evaluation,
+        { opacity: 0, filter: "blur(10px)" },
+        { opacity: 0.26, filter: "blur(0px)", duration: 0.72, ease: "power3.out" },
+        0,
+      );
+
+      tl.fromTo(
+        heading,
+        { x: -34, clipPath: "inset(0 100% 0 0)" },
+        { x: 0, clipPath: "inset(0 0% 0 0)", duration: 0.68, ease: "power4.out" },
+        0.35,
+      );
+
+      tl.fromTo(
+        tag,
+        { y: 24, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.5, ease: "power3.out" },
+        0.9,
+      );
+
+      const arrivalStarts = [1.82, 1.98, 2.12, 2.24];
+      const arrivalDurations = [0.2, 0.17, 0.15, 0.13];
+
+      stats.forEach((stat, index) => {
+        tl.set(stat, { opacity: 1, y: index === 0 ? 78 : 50 - index * 4 }, arrivalStarts[index]);
+        tl.to(
+          stat,
+          {
+            y: 0,
+            duration: arrivalDurations[index],
+            ease: "power4.out",
+          },
+          arrivalStarts[index],
+        );
+      });
+
+      const countPair = (indices, start) => {
+        indices.forEach((index) => {
+          tl.to(
+            states[index],
+            {
+              value: targets[index],
+              duration: 1.65,
+              ease: "power3.out",
+              onUpdate: () => {
+                values[index].textContent = (Math.round(states[index].value) / 10000).toFixed(4);
+              },
+            },
+            start,
+          );
+          tl.fromTo(
+            values[index],
+            { scale: 0.56 },
+            { scale: 1, duration: 1.65, ease: "power3.out" },
+            start,
+          );
+          tl.fromTo(
+            fills[index],
+            { scaleX: 0 },
+            { scaleX: proportions[index], duration: 1.65, ease: "power3.out" },
+            start,
+          );
+        });
+      };
+
+      countPair([0, 1], 2.42);
+      countPair([2, 3], 3.55);
+
+      tl.to(
+        evaluation,
+        { opacity: 0.13, duration: 0.4, ease: "power2.out" },
+        5.5,
+      );
+      tl.fromTo(
+        splitFocus,
+        {
+          opacity: 0,
+          filter: "blur(8px)",
+          clipPath: "inset(0 100% 0 0)",
+        },
+        {
+          opacity: 0.78,
+          filter: "blur(0px)",
+          clipPath: "inset(0 0% 0 0)",
+          duration: 0.62,
+          ease: "power3.out",
+        },
+        5.5,
+      );
+      tl.fromTo(
+        claim,
+        { y: 32, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.54, ease: "power4.out" },
+        5.9,
+      );
+    })();
+  </script>
+</template>

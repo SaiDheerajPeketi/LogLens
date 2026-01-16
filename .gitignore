@@ -36,3 +36,12 @@ artifacts/review/
 video/.hyperframes/
 video/.media/
 video/output/*.tmp
+videos/**/.hyperframes/
+videos/**/.media/
+videos/**/.thumbnails/
+videos/**/capture/
+videos/**/renders/
+videos/**/snapshots/
+videos/**/AGENTS.md
+videos/**/CLAUDE.md
+videos/**/meta.json

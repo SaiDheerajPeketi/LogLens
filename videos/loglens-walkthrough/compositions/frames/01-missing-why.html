@@ -51,7 +51,7 @@
       position: absolute;
       top: 92px;
       right: 106px;
-      z-index: 3;
+      z-index: 9;
       color: #f1a33c;
       font-family: monospace;
       font-size: 14px;
@@ -177,56 +177,32 @@
     }
   </style>
 
-  <div id="root" data-composition-id="01-missing-why">
-    <div
-      class="clip 01-missing-why-ground"
-      data-start="0"
-      data-duration="6"
-      data-track-index="0"
-    ></div>
+  <div data-hf-id="hf-skps" id="root" data-composition-id="01-missing-why" data-width="1920" data-height="1080" data-duration="6.4">
+    <div data-hf-id="hf-nfjz" class="clip 01-missing-why-ground" data-start="0" data-duration="6.4" data-track-index="0"></div>
 
-    <div
-      id="01-missing-why-transcript-bed"
-      class="clip 01-missing-why-transcript-bed"
-      data-start="0"
-      data-duration="6"
-      data-track-index="1"
-      aria-hidden="true"
-    >
-      <img src="capture/assets/console-desktop.png" alt="" draggable="false" />
+    <div data-hf-id="hf-hxmw" id="01-missing-why-transcript-bed" class="clip 01-missing-why-transcript-bed" data-start="0" data-duration="6.4" data-track-index="1" aria-hidden="true">
+      <img data-hf-id="hf-oizn" src="assets/console-desktop.png" alt="" draggable="false">
     </div>
 
-    <div
-      class="clip 01-missing-why-content"
-      data-start="0"
-      data-duration="6"
-      data-track-index="2"
-    >
-      <div id="01-missing-why-corner-label" class="01-missing-why-corner-label">
+    <div data-hf-id="hf-9xv3" class="clip 01-missing-why-content" data-start="0" data-duration="6.4" data-track-index="2">
+      <div data-hf-id="hf-15sn" id="01-missing-why-corner-label" class="01-missing-why-corner-label">
         incident / checkout
       </div>
 
-      <div id="01-missing-why-type-stage" class="01-missing-why-type-stage">
-        <div class="01-missing-why-type-line">
-          <span id="01-missing-why-prefix" class="01-missing-why-prefix"></span><span
-            id="01-missing-why-word"
-            class="01-missing-why-word"
-          ></span><span id="01-missing-why-caret" class="01-missing-why-caret"></span>
+      <div data-hf-id="hf-ssho" id="01-missing-why-type-stage" class="01-missing-why-type-stage">
+        <div data-hf-id="hf-9fvb" class="01-missing-why-type-line">
+          <span data-hf-id="hf-qadf" id="01-missing-why-prefix" class="01-missing-why-prefix"></span><span data-hf-id="hf-8e2b" id="01-missing-why-word" class="01-missing-why-word"></span><span data-hf-id="hf-4fcb" id="01-missing-why-caret" class="01-missing-why-caret"></span>
         </div>
       </div>
 
-      <div id="01-missing-why-rule" class="01-missing-why-rule" aria-hidden="true"></div>
+      <div data-hf-id="hf-k7i7" id="01-missing-why-rule" class="01-missing-why-rule" aria-hidden="true"></div>
 
-      <div id="01-missing-why-console" class="01-missing-why-console">
-        <img
-          src="capture/assets/console-desktop.png"
-          alt="LogLens incident console showing a database timeout and cited evidence"
-          draggable="false"
-        />
+      <div data-hf-id="hf-k37m" id="01-missing-why-console" class="01-missing-why-console">
+        <img data-hf-id="hf-yydl" src="assets/console-desktop.png" alt="LogLens incident console showing a database timeout and cited evidence" draggable="false">
       </div>
 
-      <div id="01-missing-why-brand" class="01-missing-why-brand">LogLens</div>
-      <div id="01-missing-why-promise" class="01-missing-why-promise">
+      <div data-hf-id="hf-qxxo" id="01-missing-why-brand" class="01-missing-why-brand">LogLens</div>
+      <div data-hf-id="hf-yyyp" id="01-missing-why-promise" class="01-missing-why-promise">
         evidence before inference.
       </div>
     </div>
@@ -236,7 +212,7 @@
   <script>
     (() => {
       const root = document.querySelector('[data-composition-id="01-missing-why"]');
-      const byId = (id) => root.querySelector(`[id="${id}"]`);
+const byId = (id) => document.getElementById(id);
       const transcriptBed = byId("01-missing-why-transcript-bed");
       const cornerLabel = byId("01-missing-why-corner-label");
       const typeStage = byId("01-missing-why-type-stage");

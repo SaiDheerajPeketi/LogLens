@@ -225,3 +225,15 @@ This journal records the decisions that materially shape LogLens. Each entry sta
 - **Evidence:** The committed production image is healthy locally at port 8080, and the Blueprint maps its only mutable path and HTTP health endpoint using Render's documented fields.
 - **Reconsideration trigger:** Deploy only after hosted browser tests, retention checks, privacy review, abuse controls, and an owner for ongoing cost and incident response are in place.
 - **Related implementation:** Setup guide, Render Blueprint, cloud runbook, and README delivery status; `docs: publish setup and delivery guidance`.
+
+## 021 — Use a silent, evidence-led product walkthrough
+
+- **Context:** The portfolio needs a one-minute walkthrough that demonstrates the product, cites measured results, and remains honest about the delivery boundary.
+- **Options considered:** narrated screen recording; synthetic interface animation; a silent motion-design sequence built from verified product captures.
+- **Decision:** Produce a six-scene, silent walkthrough from the real console and evaluation captures, with on-screen pacing for incident replay, cause confidence, cited evidence, held-out metrics, architecture, and repository status.
+- **Why:** The product's differentiator is visual and inspectable, while avoiding narration keeps the artifact portable and makes every claim readable in the frame itself.
+- **Benefits:** The video shows the actual interface, preserves exact metrics, includes deterministic fallback and citation behavior, and explicitly says public hosting is deferred.
+- **Tradeoffs:** The 14.99 MB MP4 is larger than a compressed social clip, and the absence of narration requires deliberate reading beats and typography.
+- **Evidence:** The final render is exactly 60.000 seconds, 1920×1080, H.264 High profile, yuv420p, and 30 fps; the final HyperFrames audit reported zero layout errors, zero motion errors or warnings, and WCAG AA contrast for all sampled text.
+- **Reconsideration trigger:** Add narration, captions, or a shorter derivative only when a target platform or accessibility review requires it.
+- **Related implementation:** Walkthrough source, poster, MP4, and README link; `feat(video): deliver the verified walkthrough`.
