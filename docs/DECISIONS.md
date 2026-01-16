@@ -67,3 +67,14 @@ This journal records the decisions that materially shape LogLens. Each entry sta
 - **Evidence:** The selected concept directly supports the product's evidence-first mechanism.
 - **Revisit when:** User testing shows the timeline slows down rather than accelerates first-pass triage.
 - **Implementation:** Web interface; `docs: record the initial product decisions`.
+
+## 007 — Use a single Python package at the repository root
+
+- **Context:** Training, evaluation, and serving need to share schemas and feature logic without publishing several internal packages.
+- **Options considered:** separate packages for API and ML; an unstructured scripts directory; one installable package with offline CLI commands.
+- **Decision:** Use one installable `loglens` Python package and keep the web application as a separate frontend workspace.
+- **Why:** It prevents train/serve drift while leaving the user interface independently buildable.
+- **Tradeoffs:** Optional ML and API dependencies install together in the MVP.
+- **Evidence:** The deployment is one Docker service and the planned model footprint is intentionally small.
+- **Revisit when:** Training requires a materially different runtime or deployment cadence.
+- **Implementation:** Python project and service scaffold; `chore: scaffold the analysis service`.
