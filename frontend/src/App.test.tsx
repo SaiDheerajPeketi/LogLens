@@ -112,9 +112,22 @@ function jsonResponse(payload: unknown, status = 200): Response {
   });
 }
 
-function installFetch(analysis = detail()): void {
+function installFetch(
+  analysis = detail(),
+  options: { healthOk?: boolean; eventsPending?: boolean } = {},
+): void {
   vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
     const url = String(input);
+    if (url === "/api/v1/health") {
+      if (options.healthOk === false) return jsonResponse({ detail: "Unavailable" }, 503);
+      return jsonResponse({
+        status: "ok",
+        service: "loglens-api",
+        version: "0.1.0",
+        model_ready: true,
+        checked_at: "2026-04-18T09:00:00Z",
+      });
+    }
     if (url === "/api/v1/scenarios") return jsonResponse(scenarios);
     if (url === "/api/v1/model-card") return jsonResponse(modelCard);
     if (url === "/api/v1/analyses" && init?.method === "POST") {
@@ -128,6 +141,7 @@ function installFetch(analysis = detail()): void {
     }
     if (url === `/api/v1/analyses/${analysis.id}`) return jsonResponse(analysis);
     if (url.startsWith(`/api/v1/analyses/${analysis.id}/events`)) {
+      if (options.eventsPending) return new Promise<Response>(() => undefined);
       return jsonResponse({ items: evidence, next_cursor: null });
     }
     return jsonResponse({ detail: "Not found" }, 404);
@@ -136,6 +150,7 @@ function installFetch(analysis = detail()): void {
 
 afterEach(() => {
   cleanup();
+  vi.restoreAllMocks();
   vi.unstubAllGlobals();
   window.location.hash = "";
 });
@@ -143,18 +158,29 @@ afterEach(() => {
 describe("LogLens console", () => {
   it("moves from first-run state to synchronized cited evidence", async () => {
     installFetch();
+    vi.stubGlobal("matchMedia", vi.fn(() => ({ matches: true })));
+    const scrollSpy = vi.spyOn(Element.prototype, "scrollIntoView");
     const user = userEvent.setup();
     render(<App />);
 
+    expect(screen.getByRole("link", { name: "Skip to main content" })).toHaveAttribute("href", "#main-content");
     expect(await screen.findByRole("heading", { name: /replay the failure/i })).toBeVisible();
     await user.click(screen.getByRole("button", { name: /run incident replay/i }));
 
     expect(await screen.findByRole("heading", { name: "Database timeout" })).toBeVisible();
+    const search = screen.getByPlaceholderText("Search redacted lines");
+    const severity = screen.getByRole("combobox", { name: /filter by severity/i });
+    await user.type(search, "missing text");
+    await user.selectOptions(severity, "INFO");
     const evidenceButton = screen.getByRole("button", { name: /line 7/i });
     await user.click(evidenceButton);
     await waitFor(() => expect(document.getElementById("event-line-7")).toHaveFocus());
+    expect(search).toHaveValue("");
+    expect(severity).toHaveValue("ALL");
+    expect(scrollSpy).toHaveBeenCalledWith(expect.objectContaining({ behavior: "auto" }));
     expect(document.getElementById("event-line-7")).toHaveClass("cited");
     expect(screen.getByText("Deterministic fallback")).toBeVisible();
+    scrollSpy.mockRestore();
   });
 
   it("supports arrow-key replay across windows", async () => {
@@ -168,6 +194,27 @@ describe("LogLens console", () => {
     anomaly.focus();
     await user.keyboard("{ArrowLeft}");
     expect(screen.getByRole("button", { name: /window 1/i })).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByRole("heading", { name: "No anomaly detected" })).toBeVisible();
+    expect(screen.getByText(/stays below the anomaly threshold/i)).toBeVisible();
+    expect(screen.queryByText(/most consistent with database timeouts/i)).not.toBeInTheDocument();
+  });
+
+  it("keeps cited evidence in a loading state until transcript lines arrive", async () => {
+    installFetch(detail(), { eventsPending: true });
+    const user = userEvent.setup();
+    render(<App />);
+    await user.click(await screen.findByRole("button", { name: /run incident replay/i }));
+
+    expect(await screen.findByText("Loading cited lines…")).toHaveAttribute("role", "status");
+    expect(screen.queryByText("No cited failure lines in this window.")).not.toBeInTheDocument();
+  });
+
+  it("reports backend readiness instead of a permanent healthy label", async () => {
+    installFetch(detail(), { healthOk: false });
+    render(<App />);
+
+    expect(await screen.findByText("Local system unavailable")).toBeVisible();
+    expect(screen.queryByText("Local system healthy")).not.toBeInTheDocument();
   });
 
   it("renders low-confidence unknown as a human-review outcome", async () => {
@@ -209,6 +256,7 @@ describe("LogLens console", () => {
     const fetchMock = vi.mocked(fetch);
     fetchMock.mockImplementation(async (input: RequestInfo | URL, init?: RequestInit) => {
       const url = String(input);
+      if (url === "/api/v1/health") return jsonResponse({ status: "ok", service: "loglens-api", version: "0.1.0", model_ready: true, checked_at: "2026-04-18T09:00:00Z" });
       if (url === "/api/v1/scenarios") return jsonResponse(scenarios);
       if (url === "/api/v1/model-card") return jsonResponse(modelCard);
       if (url === "/api/v1/analyses" && init?.method === "POST") {

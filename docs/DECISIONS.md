@@ -237,3 +237,15 @@ This journal records the decisions that materially shape LogLens. Each entry sta
 - **Evidence:** The final render is exactly 60.000 seconds, 1920×1080, H.264 High profile, yuv420p, and 30 fps; the final HyperFrames audit reported zero layout errors, zero motion errors or warnings, and WCAG AA contrast for all sampled text.
 - **Reconsideration trigger:** Add narration, captions, or a shorter derivative only when a target platform or accessibility review requires it.
 - **Related implementation:** Walkthrough source, poster, MP4, and README link; `feat(video): deliver the verified walkthrough`.
+
+## 022 — Make every console signal and state operationally truthful
+
+- **Context:** The finish review found that decorative waveform samples, analysis-wide prose, a permanently green health label, hidden citations under active filters, and very small low-contrast evidence text could imply facts or states the selected window did not support.
+- **Options considered:** label the original waveform schematic; keep global explanation prose and add a caveat; derive every visible signal and dependent view from the selected API result.
+- **Decision:** Render one score bar per returned analysis window, show analysis prose only when its cause and citations match the selected window, reset transcript filters during window or citation navigation, expose evidence loading explicitly, and derive the header state from the health endpoint. Ship Inter locally, raise core evidence text to at least 11 pixels, lighten quiet text, and remove redundant ornamental labels.
+- **Why:** An incident-analysis interface must not fabricate temporal detail, preserve stale diagnosis, conceal a cited row, or claim readiness after the API has failed.
+- **Benefits:** Timeline height now maps directly to anomaly score; selection, diagnosis, evidence, transcript, focus, and reduced-motion behavior agree; health and loading failures are visible in text as well as color; keyboard and low-vision reading paths are stronger.
+- **Tradeoffs:** The score series is visually sparser, filters reset when analytical context changes, and the bundled font adds production asset weight.
+- **Evidence:** Component tests cover truthful health, window-specific explanations, filter reset, citation focus, and evidence loading; desktop and 390-pixel captures are independently reviewed against the persisted direction contract and quality bar.
+- **Reconsideration trigger:** Revisit the score visualization only when the API exposes genuine within-window time-series samples, and revisit font sizing after operator testing at realistic transcript density.
+- **Related implementation:** React console state, health client, typography and accessibility styles, design contract, and regression tests; `fix: make the incident console truthful and accessible`.

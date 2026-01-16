@@ -13,18 +13,32 @@ import type {
 } from "./types";
 
 type Page = "console" | "evaluation" | "methodology";
+type SystemStatus = "checking" | "healthy" | "unavailable";
 
 function pageFromHash(): Page {
   const value = window.location.hash.replace("#", "");
   return value === "evaluation" || value === "methodology" ? value : "console";
 }
 
-function Header({ page, onNavigate }: { page: Page; onNavigate: (page: Page) => void }) {
+function Header({
+  page,
+  systemStatus,
+  onNavigate,
+}: {
+  page: Page;
+  systemStatus: SystemStatus;
+  onNavigate: (page: Page) => void;
+}) {
   const tabs: { id: Page; label: string; icon: typeof Activity }[] = [
     { id: "console", label: "Console", icon: Activity },
     { id: "evaluation", label: "Evaluation", icon: ChartNoAxesCombined },
     { id: "methodology", label: "Methodology", icon: BookOpenText },
   ];
+  const systemLabel = {
+    checking: "Checking local system",
+    healthy: "Local system healthy",
+    unavailable: "Local system unavailable",
+  }[systemStatus];
   return (
     <header className="topbar">
       <button className="brand" type="button" onClick={() => onNavigate("console")}>
@@ -48,9 +62,9 @@ function Header({ page, onNavigate }: { page: Page; onNavigate: (page: Page) => 
           </button>
         ))}
       </nav>
-      <div className="system-state" aria-label="System healthy">
+      <div className={`system-state ${systemStatus}`} aria-label={systemLabel} aria-live="polite">
         <span className="status-lamp" aria-hidden="true" />
-        Local system healthy
+        {systemLabel}
       </div>
     </header>
   );
@@ -60,7 +74,6 @@ function EvaluationPage({ model }: { model: ModelCard | null }) {
   return (
     <article className="document-page" aria-labelledby="evaluation-title">
       <header className="document-lede">
-        <p className="eyebrow">Measured, held out, reproducible</p>
         <h1 id="evaluation-title">Model evaluation</h1>
         <p>
           Two separate benchmarks answer two separate questions. HDFS measures binary anomaly
@@ -91,7 +104,6 @@ function EvaluationPage({ model }: { model: ModelCard | null }) {
       </section>
       <div className="document-grid">
         <section>
-          <p className="section-index">01 / ANOMALY</p>
           <h2>Block-level HDFS split</h2>
           <p>
             The full LogHub HDFS_v1 event-occurrence matrix is split by block ID into 60% train,
@@ -105,7 +117,6 @@ function EvaluationPage({ model }: { model: ModelCard | null }) {
           </dl>
         </section>
         <section>
-          <p className="section-index">02 / ROOT CAUSE</p>
           <h2>Family-disjoint synthetic split</h2>
           <p>
             Each supported cause reserves one wording family for test. The perfect score is useful
@@ -120,7 +131,6 @@ function EvaluationPage({ model }: { model: ModelCard | null }) {
         </section>
       </div>
       <section className="limitations-strip">
-        <p className="section-index">03 / LIMITS</p>
         <h2>What these numbers do not prove</h2>
         <ul>
           {(model?.limitations ?? ["Loading documented limitations…"]).map((item) => (
@@ -145,7 +155,6 @@ function MethodologyPage() {
   return (
     <article className="document-page" aria-labelledby="methodology-title">
       <header className="document-lede">
-        <p className="eyebrow">Methodology &amp; privacy</p>
         <h1 id="methodology-title">A deliberately narrow trust boundary</h1>
         <p>
           LogLens proposes a first-pass diagnosis. It does not replace a postmortem, and it never
@@ -162,7 +171,6 @@ function MethodologyPage() {
       </ol>
       <div className="document-grid methodology-grid">
         <section>
-          <p className="section-index">PRIVACY MODEL</p>
           <h2>Redact before meaning</h2>
           <p>
             Raw uploads remain in request memory only. Redaction happens before parsing,
@@ -171,7 +179,6 @@ function MethodologyPage() {
           </p>
         </section>
         <section>
-          <p className="section-index">EXPLANATION CONTRACT</p>
           <h2>Citations are executable constraints</h2>
           <p>
             The optional explanation adapter receives only selected redacted evidence. Storage is
@@ -195,11 +202,20 @@ export default function App() {
   const [analysis, setAnalysis] = useState<AnalysisDetail | AnalysisAccepted | null>(null);
   const [events, setEvents] = useState<EvidenceLine[]>([]);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [eventsState, setEventsState] = useState<"idle" | "loading" | "ready">("idle");
+  const [systemStatus, setSystemStatus] = useState<SystemStatus>("checking");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
+    api.health()
+      .then((health) => {
+        if (active) setSystemStatus(health.status === "ok" && health.model_ready ? "healthy" : "unavailable");
+      })
+      .catch(() => {
+        if (active) setSystemStatus("unavailable");
+      });
     Promise.all([api.scenarios(), api.modelCard()])
       .then(([scenarioData, modelData]) => {
         if (!active) return;
@@ -241,14 +257,19 @@ export default function App() {
   useEffect(() => {
     if (analysis?.status !== "complete") return;
     let active = true;
+    setEventsState("loading");
     api.events(analysis.id)
       .then((result) => {
         if (!active) return;
         setEvents(result.items);
         setNextCursor(result.next_cursor);
+        setEventsState("ready");
       })
       .catch((reason: unknown) => {
-        if (active) setError(reason instanceof Error ? reason.message : "Unable to load events.");
+        if (active) {
+          setEventsState("ready");
+          setError(reason instanceof Error ? reason.message : "Unable to load events.");
+        }
       });
     return () => {
       active = false;
@@ -271,6 +292,7 @@ export default function App() {
     setError(null);
     setEvents([]);
     setNextCursor(null);
+    setEventsState("idle");
     try {
       setAnalysis(await operation());
     } catch (reason) {
@@ -289,14 +311,16 @@ export default function App() {
 
   return (
     <div className="app-shell">
-      <Header page={page} onNavigate={navigate} />
-      <main id="main-content">
+      <a className="skip-link" href="#main-content">Skip to main content</a>
+      <Header page={page} systemStatus={systemStatus} onNavigate={navigate} />
+      <main id="main-content" tabIndex={-1}>
         {page === "console" && (
           <ConsolePage
             scenarios={scenarios}
             analysis={detail}
             pending={analysis && !detail ? analysis : null}
             events={events}
+            eventsLoading={eventsState === "loading"}
             nextCursor={nextCursor}
             busy={busy}
             error={error}

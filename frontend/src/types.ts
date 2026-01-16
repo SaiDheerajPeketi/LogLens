@@ -91,6 +91,14 @@ export interface EventsPage {
   next_cursor: string | null;
 }
 
+export interface HealthStatus {
+  status: string;
+  service: string;
+  version: string;
+  model_ready: boolean;
+  checked_at: string;
+}
+
 export interface ModelCard {
   version: string;
   anomaly_dataset: string;
@@ -99,4 +107,3 @@ export interface ModelCard {
   root_cause_metrics: Record<string, number>;
   limitations: string[];
 }
-

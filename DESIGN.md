@@ -4,6 +4,18 @@
 
 LogLens should feel like a flight recorder opened after an incident: dense, calm, exact, and built for scrutiny. It is an operating surface, not a marketing dashboard. The interface foregrounds time, confidence, and evidence while keeping uncertainty visible.
 
+## Direction contract
+
+- **THESIS:** Evidence before inference; a flight-recorder console that refuses the KPI-first dashboard.
+- **OWN-WORLD:** Near-black blue fields, one-pixel instrument frames, Inter plus mono data, cyan signals, amber selection, and coral faults.
+- **STORY:** Choose a safe source, replay scored windows, inspect a probable cause, then follow exact redacted citations into the transcript.
+- **FIRST VIEWPORT:** A 62px command bar tops a 252px source rail, flexible scored timeline, 332px diagnosis rail, and transcript below; the amber replay action stays in the source rail.
+- **FORM:** User-pinned flight-recorder control surface, position 1 of 1; seed `loglens-flight-recorder-v1`.
+
+## Quality bar
+
+The first viewport must show the full source → score → diagnosis → citation path without inventing measurements. Every signal bar is derived from an API anomaly score. Window selection must update diagnosis, evidence, filters, focus, and announcements as one state change. Core evidence text remains at least 11 pixels with WCAG AA contrast. API readiness, uncertainty, synthetic scope, fallback mode, and retention are never implied by color alone. At 390 pixels the same reasoning path remains complete in reading order.
+
 ## Information architecture
 
 The desktop console has four stable regions:
@@ -30,7 +42,7 @@ The canvas is near-black blue rather than neutral black. One-pixel borders estab
 | Bright border | `#2a5964` | Interactive boundaries |
 | Primary text | `#e9eee9` | Headings and essential values |
 | Muted text | `#8fa4aa` | Supporting copy |
-| Quiet text | `#60777d` | Metadata and secondary labels |
+| Quiet text | `#789097` | Metadata and secondary labels |
 | Cyan | `#59c6c7` | Normal signals, navigation, evidence affordances |
 | Amber | `#f1a33c` | Selected windows and primary action |
 | Coral | `#ef7066` | Peak anomaly and error severity |
@@ -50,7 +62,7 @@ Color never acts alone. Status also appears as text, icon, position, line style,
 
 - **Primary action:** amber fill, dark text, compact label, visible focus.
 - **Scenario option:** numbered, left-ruled selected state, one-line metadata.
-- **Signal strip:** equal-width vertical samples; cyan is nominal, amber is suspicious, coral marks the strongest interval.
+- **Score series:** one equal-width vertical bar per analysis window; height is the returned anomaly score, cyan is nominal, amber is anomalous, and coral marks the strongest anomalous window.
 - **Window cell:** always names the state, line range, and score so color is supplementary.
 - **Evidence link:** numbered line reference with severity and a truncated excerpt; activation moves focus to the transcript row.
 - **Transcript row:** fixed-width data, explicit `CITED` marker, amber inset rule, and a stronger focused state.

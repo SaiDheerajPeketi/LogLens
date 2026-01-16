@@ -2,6 +2,7 @@ import type {
   AnalysisAccepted,
   AnalysisDetail,
   EventsPage,
+  HealthStatus,
   ModelCard,
   Scenario,
 } from "./types";
@@ -31,6 +32,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export const api = {
+  health: () => request<HealthStatus>("/api/v1/health"),
   scenarios: () => request<Scenario[]>("/api/v1/scenarios"),
   modelCard: () => request<ModelCard>("/api/v1/model-card"),
   createScenario: (scenarioId: string) =>

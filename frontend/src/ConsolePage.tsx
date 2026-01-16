@@ -33,6 +33,7 @@ interface ConsolePageProps {
   analysis: AnalysisDetail | null;
   pending: AnalysisAccepted | null;
   events: EvidenceLine[];
+  eventsLoading: boolean;
   nextCursor: string | null;
   busy: boolean;
   error: string | null;
@@ -67,7 +68,6 @@ function SourceRail({
   return (
     <aside className="source-rail" aria-labelledby="source-heading">
       <div className="rail-heading">
-        <p className="eyebrow">Input channel</p>
         <h2 id="source-heading">Incident source</h2>
       </div>
       <div className="source-status">
@@ -109,15 +109,17 @@ function SourceRail({
   );
 }
 
-function SignalStrip({ anomaly, seed = 0 }: { anomaly: boolean; seed?: number }) {
+function ScoreSeries({ windows }: { windows: WindowResult[] }) {
+  const peak = Math.max(...windows.map((window) => window.anomaly_score));
   return (
-    <span className={anomaly ? "signal-strip anomaly" : "signal-strip"} aria-hidden="true">
-      {Array.from({ length: 52 }, (_, index) => {
-        const center = 1 - Math.min(1, Math.abs(index - 27) / 18);
-        const base = 14 + Math.abs(Math.sin((index + seed) * 1.71)) * 22;
-        const height = anomaly ? base + center * 35 : base;
-        return <i style={{ height: `${height}%` }} key={index} />;
-      })}
+    <span className="score-series" aria-hidden="true">
+      {windows.map((window) => (
+        <i
+          className={`${window.is_anomaly ? "anomaly" : "normal"} ${window.is_anomaly && window.anomaly_score === peak ? "peak" : ""}`}
+          style={{ height: `${Math.min(100, Math.max(0, window.anomaly_score * 100))}%` }}
+          key={window.id}
+        />
+      ))}
     </span>
   );
 }
@@ -127,7 +129,6 @@ function PipelineState({ status }: { status: AnalysisStatus }) {
   return (
     <section className="process-state" aria-labelledby="process-title">
       <LoaderCircle className="spin" size={24} aria-hidden="true" />
-      <p className="eyebrow">Local pipeline active</p>
       <h2 id="process-title">{statusLabels[status]}</h2>
       <p>Raw bytes have left memory. Every later stage operates on redacted lines.</p>
       <ol>
@@ -146,7 +147,6 @@ function FirstRun({ onStart }: { onStart: () => void }) {
   return (
     <section className="first-run" aria-labelledby="first-run-title">
       <div className="recorder-glyph" aria-hidden="true"><Gauge size={32} /></div>
-      <p className="eyebrow">Flight recorder ready</p>
       <h1 id="first-run-title">Replay the failure.<br />Inspect the evidence.</h1>
       <p>
         LogLens finds suspicious time windows, proposes a supported cause, and ties every
@@ -184,13 +184,13 @@ function Timeline({
   return (
     <section className="timeline-panel" aria-labelledby="timeline-title">
       <div className="panel-heading">
-        <div><p className="eyebrow">Incident replay</p><h2 id="timeline-title">Anomaly timeline</h2></div>
+        <h2 id="timeline-title">Anomaly timeline</h2>
         <div className="legend" aria-label="Timeline legend">
           <span><i className="normal-dot" /> Normal</span>
           <span><i className="anomaly-dot" /> Anomaly</span>
         </div>
       </div>
-      <div className="master-signal"><SignalStrip anomaly={windows.some((window) => window.is_anomaly)} seed={8} /></div>
+      <div className="master-signal"><ScoreSeries windows={windows} /></div>
       <div className="window-grid" role="group" aria-label="Analysis windows">
         {windows.map((window, index) => (
           <button
@@ -206,7 +206,9 @@ function Timeline({
             <span className="window-number">{String(index + 1).padStart(2, "0")}</span>
             <strong>{window.is_anomaly ? "Anomalous" : "Nominal"}</strong>
             <small>Lines {window.start_line}–{window.end_line}</small>
-            <SignalStrip anomaly={window.is_anomaly} seed={index * 4} />
+            <span className={window.is_anomaly ? "window-score-track anomaly" : "window-score-track"} aria-hidden="true">
+              <i style={{ width: `${Math.min(100, Math.max(0, window.anomaly_score * 100))}%` }} />
+            </span>
             <span className="window-score"><b>{percent(window.anomaly_score)}</b> anomaly score</span>
           </button>
         ))}
@@ -220,23 +222,37 @@ function Diagnosis({
   analysis,
   selected,
   events,
+  eventsLoading,
   onEvidence,
 }: {
   analysis: AnalysisDetail;
   selected: WindowResult;
   events: EvidenceLine[];
+  eventsLoading: boolean;
   onEvidence: (lineId: string) => void;
 }) {
   const evidence = selected.evidence_line_ids
     .map((id) => events.find((line) => line.id === id))
     .filter((line): line is EvidenceLine => Boolean(line));
   const explanation = analysis.explanation;
+  const explanationMatchesWindow = Boolean(
+    explanation
+    && explanation.probable_cause === selected.cause
+    && explanation.citations.length > 0
+    && explanation.citations.every((id) => selected.evidence_line_ids.includes(id)),
+  );
+  const explanationSummary = explanationMatchesWindow && explanation
+    ? explanation.summary
+    : !selected.is_anomaly
+      ? "This window stays below the anomaly threshold and has no supported cause."
+      : selected.cause === "unknown"
+        ? "This window is anomalous, but its evidence does not support a known cause."
+        : `This window is most consistent with ${causeLabels[selected.cause].toLowerCase()} based on its cited lines.`;
   return (
     <aside className="diagnosis-panel" aria-labelledby="diagnosis-title">
       <div className="diagnosis-icon" aria-hidden="true">
         {selected.is_anomaly ? <AlertTriangle size={20} /> : <Check size={20} />}
       </div>
-      <p className="eyebrow">Probable cause</p>
       <h2 id="diagnosis-title">
         {selected.is_anomaly ? causeLabels[selected.cause] : "No anomaly detected"}
       </h2>
@@ -254,19 +270,21 @@ function Diagnosis({
       >
         <span style={{ width: `${selected.confidence * 100}%` }} />
       </div>
-      {explanation && (
-        <div className="explanation-copy">
-          <p>{explanation.summary}</p>
-          <span className="explanation-mode">
-            {explanation.source === "deterministic" ? <TerminalSquare size={13} /> : <Sparkles size={13} />}
-            {explanation.source === "deterministic" ? "Deterministic fallback" : "Structured explanation"}
-          </span>
-        </div>
-      )}
-      <div className="evidence-heading">
-        <h3>Evidence</h3><span>{evidence.length} cited lines</span>
+      <div className="explanation-copy">
+        <p>{explanationSummary}</p>
+        <span className="explanation-mode">
+          {explanationMatchesWindow && explanation?.source === "openai" ? <Sparkles size={13} /> : <TerminalSquare size={13} />}
+          {explanationMatchesWindow && explanation
+            ? explanation.source === "deterministic" ? "Deterministic fallback" : "Structured explanation"
+            : "Window-level model result"}
+        </span>
       </div>
-      {evidence.length ? (
+      <div className="evidence-heading">
+        <h3>Evidence</h3><span>{selected.evidence_line_ids.length} cited lines</span>
+      </div>
+      {eventsLoading && selected.evidence_line_ids.length ? (
+        <p className="empty-evidence" role="status">Loading cited lines…</p>
+      ) : evidence.length ? (
         <ol className="evidence-list">
           {evidence.map((line, index) => (
             <li key={line.id}>
@@ -278,6 +296,8 @@ function Diagnosis({
             </li>
           ))}
         </ol>
+      ) : selected.evidence_line_ids.length ? (
+        <p className="empty-evidence">Cited lines are not present in the loaded transcript page.</p>
       ) : (
         <p className="empty-evidence">No cited failure lines in this window.</p>
       )}
@@ -296,18 +316,26 @@ function Transcript({
   selected,
   evidenceIds,
   highlightedId,
+  eventsLoading,
+  query,
+  severity,
   nextCursor,
+  onQueryChange,
+  onSeverityChange,
   onLoadMore,
 }: {
   events: EvidenceLine[];
   selected: WindowResult;
   evidenceIds: string[];
   highlightedId: string | null;
+  eventsLoading: boolean;
+  query: string;
+  severity: string;
   nextCursor: string | null;
+  onQueryChange: (value: string) => void;
+  onSeverityChange: (value: string) => void;
   onLoadMore: () => void;
 }) {
-  const [query, setQuery] = useState("");
-  const [severity, setSeverity] = useState("ALL");
   const rows = useMemo(() => events.filter((event) => {
     const inWindow = event.line_no >= selected.start_line && event.line_no <= selected.end_line;
     const matchesSeverity = severity === "ALL" || event.severity === severity;
@@ -317,9 +345,9 @@ function Transcript({
   return (
     <section className="transcript-panel" aria-labelledby="transcript-title">
       <div className="transcript-toolbar">
-        <div><p className="eyebrow">Synchronized record</p><h2 id="transcript-title">Redacted transcript</h2></div>
-        <label className="search-field"><Search size={15} /><span className="sr-only">Search transcript</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search redacted lines" /></label>
-        <label className="severity-field"><span className="sr-only">Filter by severity</span><select value={severity} onChange={(event) => setSeverity(event.target.value)}><option>ALL</option><option>ERROR</option><option>WARN</option><option>INFO</option><option>DEBUG</option></select></label>
+        <h2 id="transcript-title">Redacted transcript</h2>
+        <label className="search-field"><Search size={15} /><span className="sr-only">Search transcript</span><input value={query} onChange={(event) => onQueryChange(event.target.value)} placeholder="Search redacted lines" /></label>
+        <label className="severity-field"><span className="sr-only">Filter by severity</span><select value={severity} onChange={(event) => onSeverityChange(event.target.value)}><option>ALL</option><option>ERROR</option><option>WARN</option><option>INFO</option><option>DEBUG</option></select></label>
       </div>
       <div className="table-scroll">
         <table>
@@ -342,7 +370,7 @@ function Transcript({
             })}
           </tbody>
         </table>
-        {!rows.length && <p className="empty-table">No lines match this window and filter.</p>}
+        {!rows.length && <p className="empty-table" role={eventsLoading ? "status" : undefined}>{eventsLoading ? "Loading redacted lines…" : "No lines match this window and filter."}</p>}
       </div>
       {nextCursor && <button className="load-more" type="button" onClick={onLoadMore}>Load more redacted lines</button>}
     </section>
@@ -354,6 +382,7 @@ export function ConsolePage({
   analysis,
   pending,
   events,
+  eventsLoading,
   nextCursor,
   busy,
   error,
@@ -365,12 +394,17 @@ export function ConsolePage({
   const [selectedScenario, setSelectedScenario] = useState("db-timeout-checkout");
   const [selectedWindowId, setSelectedWindowId] = useState("");
   const [highlightedLine, setHighlightedLine] = useState<string | null>(null);
+  const [query, setQuery] = useState("");
+  const [severity, setSeverity] = useState("ALL");
 
   useEffect(() => {
     if (!analysis?.windows.length) return;
     const primary = [...analysis.windows]
       .sort((left, right) => right.anomaly_score - left.anomaly_score)[0];
     setSelectedWindowId(primary.id);
+    setHighlightedLine(null);
+    setQuery("");
+    setSeverity("ALL");
   }, [analysis?.id, analysis?.windows]);
 
   const selectedWindow = analysis?.windows.find((window) => window.id === selectedWindowId)
@@ -378,12 +412,27 @@ export function ConsolePage({
   const currentStatus = analysis?.status ?? pending?.status;
 
   const goToEvidence = (lineId: string) => {
+    setQuery("");
+    setSeverity("ALL");
     setHighlightedLine(lineId);
-    window.requestAnimationFrame(() => {
-      const target = document.getElementById(`event-${lineId}`);
-      target?.scrollIntoView({ block: "center", behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    if (!highlightedLine || query || severity !== "ALL") return;
+    const frame = window.requestAnimationFrame(() => {
+      const target = document.getElementById(`event-${highlightedLine}`);
+      const reduceMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
+      target?.scrollIntoView({ block: "center", behavior: reduceMotion ? "auto" : "smooth" });
       target?.focus({ preventScroll: true });
     });
+    return () => window.cancelAnimationFrame(frame);
+  }, [events, highlightedLine, query, selectedWindowId, severity]);
+
+  const selectWindow = (window: WindowResult) => {
+    setSelectedWindowId(window.id);
+    setHighlightedLine(null);
+    setQuery("");
+    setSeverity("ALL");
   };
 
   return (
@@ -405,7 +454,6 @@ export function ConsolePage({
         {analysis && ["failed", "expired"].includes(analysis.status) && (
           <section className="failure-state" role="alert">
             <AlertTriangle size={24} />
-            <p className="eyebrow">{analysis.status === "expired" ? "Retention window ended" : "Pipeline stopped"}</p>
             <h2>{analysis.error?.message ?? statusLabels[analysis.status]}</h2>
             <p>{analysis.error?.action}</p>
             {analysis.error?.retryable && onRetry && <button className="primary-action" type="button" onClick={onRetry}><RefreshCw size={15} /> Retry analysis</button>}
@@ -420,9 +468,21 @@ export function ConsolePage({
               <div><span>Raw data</span><strong className="safe-value"><ShieldCheck size={13} /> Not retained</strong></div>
             </div>
             <div className="replay-grid">
-              <Timeline windows={analysis.windows} selectedId={selectedWindow.id} onSelect={(window) => { setSelectedWindowId(window.id); setHighlightedLine(null); }} />
-              <Diagnosis analysis={analysis} selected={selectedWindow} events={events} onEvidence={goToEvidence} />
-              <Transcript events={events} selected={selectedWindow} evidenceIds={selectedWindow.evidence_line_ids} highlightedId={highlightedLine} nextCursor={nextCursor} onLoadMore={onLoadMore} />
+              <Timeline windows={analysis.windows} selectedId={selectedWindow.id} onSelect={selectWindow} />
+              <Diagnosis analysis={analysis} selected={selectedWindow} events={events} eventsLoading={eventsLoading} onEvidence={goToEvidence} />
+              <Transcript
+                events={events}
+                selected={selectedWindow}
+                evidenceIds={selectedWindow.evidence_line_ids}
+                highlightedId={highlightedLine}
+                eventsLoading={eventsLoading}
+                query={query}
+                severity={severity}
+                nextCursor={nextCursor}
+                onQueryChange={setQuery}
+                onSeverityChange={setSeverity}
+                onLoadMore={onLoadMore}
+              />
             </div>
           </>
         )}
