@@ -4,7 +4,7 @@ Evidence-first log anomaly detection and root-cause analysis.
 
 LogLens turns a small plain-text log into a replayable incident timeline, a probable cause, and an explanation tied to exact redacted lines. It deliberately separates what was measured on real data from what was learned from synthetic incidents.
 
-> **Delivery status:** the production Docker demo is verified locally at `http://localhost:8080`. Public cloud hosting is deferred; this repository does not claim a public live URL.
+> **Delivery status:** the production Docker demo is verified locally at `http://localhost:8080`. Public cloud hosting and public repository visibility are deferred; this project does not claim a public live URL or public source access.
 
 ![LogLens incident console](docs/screenshots/console-desktop.png)
 
@@ -34,6 +34,8 @@ See [the complete evaluation report](docs/EVALUATION.md) and [machine-readable a
 ## Quick start
 
 Requirements: Docker Engine and Docker Compose.
+
+The repository is currently private. The clone command below requires GitHub access granted by the owner; otherwise, run the same commands from an authorized local checkout.
 
 ```bash
 git clone https://github.com/SaiDheerajPeketi/LogLens.git

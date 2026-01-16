@@ -249,3 +249,15 @@ This journal records the decisions that materially shape LogLens. Each entry sta
 - **Evidence:** Component tests cover truthful health, window-specific explanations, filter reset, citation focus, and evidence loading; desktop and 390-pixel captures are independently reviewed against the persisted direction contract and quality bar.
 - **Reconsideration trigger:** Revisit the score visualization only when the API exposes genuine within-window time-series samples, and revisit font sizing after operator testing at realistic transcript density.
 - **Related implementation:** React console state, health client, typography and accessibility styles, design contract, and regression tests; `fix: make the incident console truthful and accessible`.
+
+## 023 — Keep repository visibility private until an owner-led release
+
+- **Context:** The delivery plan originally included a public GitHub repository, but changing visibility would immediately expose the source and its history outside the approved audience.
+- **Options considered:** publish the repository after the final audit; keep it private while retaining a release-ready history and documentation.
+- **Decision:** Leave `SaiDheerajPeketi/LogLens` private and treat public source availability as deferred.
+- **Why:** The owner explicitly requested that the existing private visibility remain unchanged.
+- **Benefits:** Access stays controlled without altering the implementation, validation record, or later publication path.
+- **Tradeoffs:** Unauthenticated readers cannot clone the repository or independently inspect the source, so the public-repository deliverable is not complete.
+- **Evidence:** The README now states that cloning requires owner-granted GitHub access and makes no public-access claim.
+- **Reconsideration trigger:** Change visibility only after the owner explicitly authorizes publication and repeats the privacy, history, secret, and clean-checkout audits.
+- **Related implementation:** Delivery-status and quick-start documentation; `docs: defer public repository visibility`.
