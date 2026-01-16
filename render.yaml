@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: loglens
+    runtime: docker
+    plan: 0.5c-512mb
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: LOGLENS_ENVIRONMENT
+        value: production
+      - key: LOGLENS_RESULT_TTL_HOURS
+        value: "24"
+      - key: LOGLENS_QUEUE_CAPACITY
+        value: "8"
+    disk:
+      name: loglens-runtime
+      mountPath: /app/data/runtime
+      sizeGB: 1

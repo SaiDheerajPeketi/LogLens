@@ -213,3 +213,15 @@ This journal records the decisions that materially shape LogLens. Each entry sta
 - **Evidence:** Six of six analyses passed, all 15 returned citations were valid, the invalid citation was rejected, and zero raw files or raw markers remained.
 - **Reconsideration trigger:** Expand the corpus and privacy probes when representative customer formats or a formal data-classification standard become available.
 - **Related implementation:** Runtime evaluation command, CI integrity step, and evaluation artifact; `test: measure runtime citation integrity`.
+
+## 020 — Keep public hosting deferred and document a single-instance path
+
+- **Context:** The project needs a concrete deployment route, but making an upload surface public adds cost, abuse, privacy, and operational obligations that have not been reviewed.
+- **Options considered:** claim a temporary free-tier URL; deploy the current container without persistent storage; defer hosting while committing a Render Blueprint and runbook.
+- **Decision:** Claim only the verified local Compose demo and provide a later Render Docker deployment with one persistent SQLite disk, explicit health checks, and a documented migration boundary.
+- **Why:** It proves packaging and cloud readiness without implying an unattended public upload service is production-safe.
+- **Benefits:** The path uses the same image and health contract, preserves the 24-hour redacted results, and makes cost and scaling constraints explicit before creation.
+- **Tradeoffs:** There is no public live URL; an attached Render disk requires a paid single instance and disables zero-downtime deploys.
+- **Evidence:** The committed production image is healthy locally at port 8080, and the Blueprint maps its only mutable path and HTTP health endpoint using Render's documented fields.
+- **Reconsideration trigger:** Deploy only after hosted browser tests, retention checks, privacy review, abuse controls, and an owner for ongoing cost and incident response are in place.
+- **Related implementation:** Setup guide, Render Blueprint, cloud runbook, and README delivery status; `docs: publish setup and delivery guidance`.
