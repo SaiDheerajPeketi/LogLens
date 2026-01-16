@@ -1,0 +1,393 @@
+<template>
+  <style>
+    #root {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      container-type: size;
+      color: #e9eee9;
+    }
+
+    .clip {
+      position: absolute;
+      inset: 0;
+    }
+
+    [class~="01-missing-why-ground"] {
+      background: #071015;
+    }
+
+    [class~="01-missing-why-transcript-bed"] {
+      overflow: hidden;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    [class~="01-missing-why-transcript-bed"] img {
+      position: absolute;
+      width: 1920px;
+      height: 1440px;
+      left: 0;
+      top: -250px;
+      object-fit: cover;
+      object-position: 58% 58%;
+      filter: brightness(0.5) saturate(0.7);
+    }
+
+    [class~="01-missing-why-transcript-bed"]::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: rgba(7, 16, 21, 0.34);
+    }
+
+    [class~="01-missing-why-content"] {
+      z-index: 2;
+      overflow: hidden;
+    }
+
+    [class~="01-missing-why-corner-label"] {
+      position: absolute;
+      top: 92px;
+      right: 106px;
+      z-index: 3;
+      color: #f1a33c;
+      font-family: monospace;
+      font-size: 14px;
+      font-weight: 600;
+      line-height: 1;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    [class~="01-missing-why-type-stage"] {
+      position: absolute;
+      left: 105px;
+      top: 245px;
+      z-index: 5;
+      width: 1460px;
+      height: 180px;
+      transform-origin: 585px 50%;
+      white-space: pre;
+    }
+
+    [class~="01-missing-why-type-line"] {
+      display: inline-flex;
+      align-items: baseline;
+      min-width: 1460px;
+      color: #e9eee9;
+      font-family: sans-serif;
+      font-size: 136px;
+      font-weight: 900;
+      line-height: 0.94;
+      letter-spacing: -0.045em;
+      text-transform: lowercase;
+      white-space: pre;
+    }
+
+    [class~="01-missing-why-prefix"],
+    [class~="01-missing-why-word"] {
+      white-space: pre;
+    }
+
+    [class~="01-missing-why-caret"] {
+      display: inline-block;
+      width: 18px;
+      height: 112px;
+      margin-left: 10px;
+      background: #e9eee9;
+      vertical-align: -5px;
+      flex: 0 0 auto;
+    }
+
+    [class~="01-missing-why-rule"] {
+      position: absolute;
+      left: 672px;
+      top: 326px;
+      z-index: 8;
+      width: 36px;
+      height: 2px;
+      background: #f1a33c;
+      transform-origin: 50% 50%;
+    }
+
+    [class~="01-missing-why-console"] {
+      position: absolute;
+      left: 690px;
+      top: 92px;
+      z-index: 6;
+      width: 1125px;
+      height: 760px;
+      overflow: hidden;
+      border-top: 1px solid rgba(241, 163, 60, 0.52);
+      border-left: 1px solid rgba(241, 163, 60, 0.52);
+      transform-origin: 0% 31%;
+    }
+
+    [class~="01-missing-why-console"] img {
+      position: absolute;
+      left: -230px;
+      top: -260px;
+      width: 1440px;
+      height: 1080px;
+      opacity: 0.78;
+      filter: brightness(0.62) saturate(0.76);
+    }
+
+    [class~="01-missing-why-console"]::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: rgba(7, 16, 21, 0.28);
+    }
+
+    [class~="01-missing-why-brand"] {
+      position: absolute;
+      left: 104px;
+      top: 294px;
+      z-index: 7;
+      width: 520px;
+      color: #e9eee9;
+      font-family: sans-serif;
+      font-size: 156px;
+      font-weight: 900;
+      line-height: 0.88;
+      letter-spacing: -0.055em;
+      text-transform: lowercase;
+      transform-origin: 0% 50%;
+    }
+
+    [class~="01-missing-why-promise"] {
+      position: absolute;
+      left: 110px;
+      top: 512px;
+      z-index: 7;
+      width: 470px;
+      padding-top: 20px;
+      border-top: 1px solid #282726;
+      color: #f1a33c;
+      font-family: monospace;
+      font-size: 27px;
+      font-weight: 600;
+      line-height: 1.35;
+      letter-spacing: 0.03em;
+      text-transform: lowercase;
+    }
+  </style>
+
+  <div id="root" data-composition-id="01-missing-why">
+    <div
+      class="clip 01-missing-why-ground"
+      data-start="0"
+      data-duration="6"
+      data-track-index="0"
+    ></div>
+
+    <div
+      id="01-missing-why-transcript-bed"
+      class="clip 01-missing-why-transcript-bed"
+      data-start="0"
+      data-duration="6"
+      data-track-index="1"
+      aria-hidden="true"
+    >
+      <img src="capture/assets/console-desktop.png" alt="" draggable="false" />
+    </div>
+
+    <div
+      class="clip 01-missing-why-content"
+      data-start="0"
+      data-duration="6"
+      data-track-index="2"
+    >
+      <div id="01-missing-why-corner-label" class="01-missing-why-corner-label">
+        incident / checkout
+      </div>
+
+      <div id="01-missing-why-type-stage" class="01-missing-why-type-stage">
+        <div class="01-missing-why-type-line">
+          <span id="01-missing-why-prefix" class="01-missing-why-prefix"></span><span
+            id="01-missing-why-word"
+            class="01-missing-why-word"
+          ></span><span id="01-missing-why-caret" class="01-missing-why-caret"></span>
+        </div>
+      </div>
+
+      <div id="01-missing-why-rule" class="01-missing-why-rule" aria-hidden="true"></div>
+
+      <div id="01-missing-why-console" class="01-missing-why-console">
+        <img
+          src="capture/assets/console-desktop.png"
+          alt="LogLens incident console showing a database timeout and cited evidence"
+          draggable="false"
+        />
+      </div>
+
+      <div id="01-missing-why-brand" class="01-missing-why-brand">LogLens</div>
+      <div id="01-missing-why-promise" class="01-missing-why-promise">
+        evidence before inference.
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+  <script>
+    (() => {
+      const root = document.querySelector('[data-composition-id="01-missing-why"]');
+      const byId = (id) => root.querySelector(`[id="${id}"]`);
+      const transcriptBed = byId("01-missing-why-transcript-bed");
+      const cornerLabel = byId("01-missing-why-corner-label");
+      const typeStage = byId("01-missing-why-type-stage");
+      const prefixEl = byId("01-missing-why-prefix");
+      const wordEl = byId("01-missing-why-word");
+      const caretEl = byId("01-missing-why-caret");
+      const ruleEl = byId("01-missing-why-rule");
+      const consoleEl = byId("01-missing-why-console");
+      const brandEl = byId("01-missing-why-brand");
+      const promiseEl = byId("01-missing-why-promise");
+
+      const CREAM = "#e9eee9";
+      const ORANGE = "#f1a33c";
+      const SEQUENCE = [
+        { t: 0.0, prefix: "", word: "", wordColor: CREAM, cursorColor: CREAM },
+        { t: 0.32, prefix: "a", word: "", wordColor: CREAM, cursorColor: CREAM },
+        { t: 0.43, prefix: "an", word: "", wordColor: CREAM, cursorColor: CREAM },
+        { t: 0.54, prefix: "ano", word: "", wordColor: CREAM, cursorColor: CREAM },
+        { t: 0.65, prefix: "anom", word: "", wordColor: CREAM, cursorColor: CREAM },
+        { t: 0.76, prefix: "anoma", word: "", wordColor: CREAM, cursorColor: CREAM },
+        { t: 0.87, prefix: "anomal", word: "", wordColor: CREAM, cursorColor: CREAM },
+        { t: 0.98, prefix: "anomaly", word: "", wordColor: CREAM, cursorColor: CREAM },
+        { t: 1.12, prefix: "anomaly ", word: "", wordColor: CREAM, cursorColor: CREAM },
+        { t: 1.24, prefix: "anomaly ", word: "f", wordColor: CREAM, cursorColor: CREAM },
+        { t: 1.36, prefix: "anomaly ", word: "fo", wordColor: CREAM, cursorColor: CREAM },
+        { t: 1.48, prefix: "anomaly ", word: "fou", wordColor: CREAM, cursorColor: CREAM },
+        { t: 1.6, prefix: "anomaly ", word: "foun", wordColor: CREAM, cursorColor: CREAM },
+        { t: 1.72, prefix: "anomaly ", word: "found", wordColor: CREAM, cursorColor: CREAM },
+        { t: 1.86, prefix: "anomaly ", word: "found.", wordColor: CREAM, cursorColor: CREAM },
+        { t: 2.1, prefix: "anomaly ", word: "found", wordColor: CREAM, cursorColor: CREAM },
+        { t: 2.17, prefix: "anomaly ", word: "foun", wordColor: CREAM, cursorColor: CREAM },
+        { t: 2.24, prefix: "anomaly ", word: "fou", wordColor: CREAM, cursorColor: CREAM },
+        { t: 2.31, prefix: "anomaly ", word: "fo", wordColor: CREAM, cursorColor: CREAM },
+        { t: 2.38, prefix: "anomaly ", word: "f", wordColor: CREAM, cursorColor: CREAM },
+        { t: 2.45, prefix: "anomaly ", word: "", wordColor: ORANGE, cursorColor: ORANGE },
+        { t: 2.53, prefix: "anomaly ", word: "e", wordColor: ORANGE, cursorColor: ORANGE },
+        { t: 2.61, prefix: "anomaly ", word: "ex", wordColor: ORANGE, cursorColor: ORANGE },
+        { t: 2.69, prefix: "anomaly ", word: "exp", wordColor: ORANGE, cursorColor: ORANGE },
+        { t: 2.77, prefix: "anomaly ", word: "expl", wordColor: ORANGE, cursorColor: ORANGE },
+        { t: 2.85, prefix: "anomaly ", word: "expla", wordColor: ORANGE, cursorColor: ORANGE },
+        { t: 2.93, prefix: "anomaly ", word: "explai", wordColor: ORANGE, cursorColor: ORANGE },
+        { t: 3.01, prefix: "anomaly ", word: "explain", wordColor: ORANGE, cursorColor: ORANGE },
+        { t: 3.09, prefix: "anomaly ", word: "explaine", wordColor: ORANGE, cursorColor: ORANGE },
+        { t: 3.17, prefix: "anomaly ", word: "explained", wordColor: ORANGE, cursorColor: ORANGE },
+        { t: 3.25, prefix: "anomaly ", word: "explained?", wordColor: ORANGE, cursorColor: ORANGE },
+      ];
+
+      const entryAt = (time) => {
+        for (let index = SEQUENCE.length - 1; index >= 0; index -= 1) {
+          if (time >= SEQUENCE[index].t) return SEQUENCE[index];
+        }
+        return SEQUENCE[0];
+      };
+
+      const renderText = (time) => {
+        const entry = entryAt(time);
+        prefixEl.textContent = entry.prefix;
+        wordEl.textContent = entry.word;
+        wordEl.style.color = entry.wordColor;
+        caretEl.style.background = entry.cursorColor;
+      };
+
+      renderText(0);
+
+      const tl = gsap.timeline({ paused: true });
+      window.__timelines = window.__timelines || {};
+      window.__timelines["01-missing-why"] = tl;
+
+      tl.fromTo(
+        transcriptBed,
+        { opacity: 0 },
+        { opacity: 0.18, duration: 0.5, ease: "power2.out" },
+        0.2,
+      );
+      tl.fromTo(
+        typeStage,
+        { opacity: 0 },
+        { opacity: 1, duration: 0.12, ease: "none" },
+        0.2,
+      );
+      tl.fromTo(
+        cornerLabel,
+        { opacity: 0, y: -10 },
+        { opacity: 1, y: 0, duration: 0.35, ease: "power2.out" },
+        0.38,
+      );
+
+      const typeDriver = { t: 0 };
+      tl.to(
+        typeDriver,
+        {
+          t: 3.7,
+          duration: 3.7,
+          ease: "none",
+          onUpdate: () => renderText(typeDriver.t),
+        },
+        0,
+      );
+
+      const blinkDriver = { p: 0 };
+      tl.to(
+        blinkDriver,
+        {
+          p: Math.PI * 2 * 6,
+          duration: 3.7,
+          ease: "none",
+          onUpdate: () => {
+            caretEl.style.opacity = Math.sin(blinkDriver.p) > 0 ? "1" : "0";
+          },
+        },
+        0,
+      );
+
+      tl.set(caretEl, { opacity: 0 }, 3.7);
+      tl.to(
+        typeStage,
+        {
+          scaleX: 0.035,
+          opacity: 0,
+          duration: 0.42,
+          ease: "power2.in",
+        },
+        3.7,
+      );
+      tl.fromTo(
+        ruleEl,
+        { opacity: 0, scaleX: 0 },
+        { opacity: 1, scaleX: 1, duration: 0.3, ease: "power2.out" },
+        3.86,
+      );
+      tl.to(transcriptBed, { opacity: 0.06, duration: 0.34, ease: "power2.out" }, 3.7);
+      tl.fromTo(
+        consoleEl,
+        { opacity: 0, scale: 0.68 },
+        { opacity: 1, scale: 1, duration: 0.68, ease: "back.out(1.4)" },
+        3.94,
+      );
+      tl.fromTo(
+        brandEl,
+        { opacity: 0, scale: 0.72 },
+        { opacity: 1, scale: 1, duration: 0.58, ease: "back.out(1.4)" },
+        4.02,
+      );
+      tl.fromTo(
+        promiseEl,
+        { opacity: 0, y: 28 },
+        { opacity: 1, y: 0, duration: 0.42, ease: "power3.out" },
+        4.7,
+      );
+
+      tl.to({ hold: 0 }, { hold: 1, duration: 0.88, ease: "none" }, 5.12);
+    })();
+  </script>
+</template>
