@@ -1,0 +1,7 @@
+,predicted_authentication_failure,predicted_connection_pool_exhaustion,predicted_database_timeout,predicted_disk_pressure,predicted_network_dns_failure,predicted_unknown
+actual_authentication_failure,25,0,0,0,0,0
+actual_connection_pool_exhaustion,0,25,0,0,0,0
+actual_database_timeout,0,0,25,0,0,0
+actual_disk_pressure,0,0,0,25,0,0
+actual_network_dns_failure,0,0,0,0,25,0
+actual_unknown,0,0,0,0,0,25

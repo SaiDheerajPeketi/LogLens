@@ -1,0 +1,27 @@
+{
+  "anomaly": {
+    "cost_weighted_score": 0.9994839153621193,
+    "f1": 0.9955595026642984,
+    "false_negative": 5.0,
+    "false_positive": 25.0,
+    "false_positive_rate": 0.00022392404496394822,
+    "pr_auc": 0.9994212289572607,
+    "precision": 0.9926210153482881,
+    "recall": 0.9985154394299287,
+    "test_traces": 115013.0,
+    "threshold": 0.6499999999999999,
+    "train_traces": 345036.0,
+    "true_negative": 111620.0,
+    "true_positive": 3363.0,
+    "validation_traces": 115012.0
+  },
+  "generated_at": "2026-09-16T03:43:39.979168+00:00",
+  "random_state": 42,
+  "root_cause": {
+    "correct_incidents": 150.0,
+    "held_out_families": 6.0,
+    "macro_f1": 1.0,
+    "test_incidents": 150.0,
+    "weighted_f1": 1.0
+  }
+}
