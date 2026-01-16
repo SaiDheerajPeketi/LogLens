@@ -78,3 +78,25 @@ This journal records the decisions that materially shape LogLens. Each entry sta
 - **Evidence:** The deployment is one Docker service and the planned model footprint is intentionally small.
 - **Revisit when:** Training requires a materially different runtime or deployment cadence.
 - **Implementation:** Python project and service scaffold; `chore: scaffold the analysis service`.
+
+## 008 — Redact before parsing, persistence, or explanation
+
+- **Context:** Log lines can contain secrets and personal or infrastructure identifiers, while parsing still needs stable relationships within one analysis.
+- **Options considered:** reject all uploads; redact only before external API calls; redact immediately with stable per-analysis aliases.
+- **Decision:** Validate and redact each line before feature extraction, persistence, or explanation, using salted aliases that remain stable only within one analysis.
+- **Why:** The pipeline preserves useful recurrence without retaining original sensitive values.
+- **Tradeoffs:** Redaction can remove features that might help a classifier and cannot guarantee detection of every proprietary secret format.
+- **Evidence:** The public demo explicitly warns against confidential logs and treats redaction as defense in depth.
+- **Revisit when:** A production pilot supplies a formal data-classification policy or requires an on-premises-only mode.
+- **Implementation:** Ingestion pipeline; `feat: validate and redact uploaded logs`.
+
+## 009 — Select windows by evidence available in the log
+
+- **Context:** HDFS has block identifiers, many application logs have request IDs or timestamps, and some logs have neither.
+- **Options considered:** fixed line windows only; require a configured parser; use a deterministic precedence order.
+- **Decision:** Prefer correlation identifiers when they cover at least half the lines, then five-minute timestamp windows, then 200-line windows with 50-line overlap.
+- **Why:** It uses the strongest available grouping while keeping generic uploads analyzable.
+- **Tradeoffs:** Mixed-format logs may fall back to coarse windows, and overlapping windows require result deduplication.
+- **Evidence:** The precedence is deterministic and directly testable across representative formats.
+- **Revisit when:** Format-specific adapters or streaming sessions provide stronger boundaries.
+- **Implementation:** Ingestion pipeline; `feat: validate and redact uploaded logs`.
